@@ -1,19 +1,21 @@
 import 'package:chats/apis/user_repository.dart';
 import 'package:chats/screens/logout_screen.dart';
 import 'package:chats/screens/main_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
+import 'firebase_options.dart';
 
 // flutter pub add flutter_secure_storage
 // Android , MacOS Linux 는 별도의 설정이 필요합니다.
 // flutter pub add http
 
 void main() async {
-  // WidgetsFlutterBinding.ensureInitialized();
-  // await Firebase.initializeApp(
-  //   options: DefaultFirebaseOptions.currentPlatform,
-  // );
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   FlutterSecureStorage.setMockInitialValues({});
   runApp(const MyApp());
 }

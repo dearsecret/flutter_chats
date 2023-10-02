@@ -1,5 +1,5 @@
 import 'package:chats/components/profile_menu.dart';
-import 'package:chats/components/upload_image.dart';
+import 'package:chats/screens/upload_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -41,7 +41,6 @@ class Profile extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 30),
-          // Text("${context.watch<UserProvider>()}"),
           Text("${context.read<UserProvider>().name}"),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -50,7 +49,7 @@ class Profile extends StatelessWidget {
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => AddImage()));
+                        MaterialPageRoute(builder: (context) => UploadImage()));
                   },
                   child: MenuItem(
                       title: "프로필", iconData: Icons.contact_page_outlined),
