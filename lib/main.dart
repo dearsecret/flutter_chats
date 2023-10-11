@@ -1,6 +1,8 @@
 import 'package:chats/apis/user_repository.dart';
+import 'package:chats/providers/post_provider.dart';
 import 'package:chats/screens/logout_screen.dart';
 import 'package:chats/screens/main_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -22,7 +24,6 @@ void main() async {
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
-
   @override
   State<MyApp> createState() => _MyAppState();
 }
@@ -31,28 +32,33 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (context) => UserProvider()),
-      ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          textTheme: TextTheme(
-            titleMedium: TextStyle(color: Colors.brown[400]),
-            titleLarge: TextStyle(color: Colors.brown[200]),
+        providers: [
+          ChangeNotifierProvider(create: (context) => UserProvider()),
+          ChangeNotifierProvider(create: (context) => PostProvider()),
+        ],
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(
+            textTheme: TextTheme(
+              titleMedium: TextStyle(color: Colors.brown[400]),
+              titleLarge: TextStyle(color: Colors.brown[200]),
+            ),
+            textSelectionTheme:
+                TextSelectionThemeData(cursorColor: Colors.brown[600]),
+            colorScheme: ColorScheme.fromSwatch().copyWith(
+              primary: Colors.brown[300],
+            ),
           ),
-          textSelectionTheme:
-              TextSelectionThemeData(cursorColor: Colors.brown[600]),
-          colorScheme: ColorScheme.fromSwatch().copyWith(
-            primary: Colors.brown[300],
+          home: StreamBuilder(
+            stream: FirebaseAuth.instance.authStateChanges(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                // print(snapshot.data);
+                return const MyProfile();
+              }
+              return const LogOut();
+            },
           ),
-        ),
-        initialRoute: "/",
-        routes: {
-          "/": (context) => const LogOut(),
-          "/main": (context) => const MyProfile(),
-        },
-      ),
-    );
+        ));
   }
 }

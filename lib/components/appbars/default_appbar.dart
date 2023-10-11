@@ -1,3 +1,4 @@
+import 'package:chats/components/logout_button.dart';
 import 'package:flutter/material.dart';
 
 class DefaultAppbar extends StatelessWidget {
@@ -15,13 +16,7 @@ class DefaultAppbar extends StatelessWidget {
         ),
       )),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.logout),
-          tooltip: 'logout',
-          onPressed: () {
-            // logout();
-          },
-        )
+        SignOut(),
       ],
     );
   }

@@ -1,5 +1,6 @@
 import 'package:chats/components/appbars/default_appbar.dart';
 import 'package:chats/screens/party_screen.dart';
+import 'package:chats/screens/posts_write_screen.dart';
 import 'package:chats/screens/profile_screen.dart';
 import 'package:chats/screens/service_screen.dart';
 import 'package:extended_image/extended_image.dart';
@@ -76,54 +77,79 @@ class _MyProfileState extends State<MyProfile> {
     });
   }
 
+  Widget? switchFloatingButton(_selectedIndex) {
+    Widget newButton = Container();
+    switch (_selectedIndex) {
+      case 0:
+        break;
+      case 1:
+        newButton = Align(
+          child: FloatingActionButton(
+            onPressed: () {
+              Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (context) => PostWrite()));
+            },
+            child: Icon(Icons.border_color),
+            backgroundColor: Colors.black,
+          ),
+          alignment: Alignment(0.95, 0.95),
+        );
+        break;
+      case 2:
+        newButton = Align(
+          child: FloatingActionButton(
+            onPressed: () {
+              Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (context) => ChatPost()));
+            },
+            child: Icon(Icons.border_color),
+            backgroundColor: Colors.black,
+          ),
+          alignment: Alignment(0.95, 0.95),
+        );
+        break;
+      case 3:
+        break;
+    }
+    return newButton;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _appbarOptions.elementAt(_selectedIndex) == null
-          ? null
-          : PreferredSize(
-              preferredSize: AppBar().preferredSize,
-              child: _appbarOptions.elementAt(_selectedIndex)!),
-      body: SafeArea(
-        child: GestureDetector(
-          onTap: () {
-            FocusScope.of(context).unfocus();
-          },
-          child: Center(
-            child: _widgetOptions.elementAt(_selectedIndex),
+        appBar: _appbarOptions.elementAt(_selectedIndex) == null
+            ? null
+            : PreferredSize(
+                preferredSize: AppBar().preferredSize,
+                child: _appbarOptions.elementAt(_selectedIndex)!),
+        body: SafeArea(
+          child: GestureDetector(
+            onTap: () {
+              FocusScope.of(context).unfocus();
+            },
+            child: Center(
+              child: _widgetOptions.elementAt(_selectedIndex),
+            ),
           ),
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-              icon: Icon(Icons.psychology_alt_outlined), label: ""),
-          BottomNavigationBarItem(icon: Icon(Icons.people_outlined), label: ""),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.question_answer_outlined), label: ""),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.person_2_outlined), label: ""),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.brown[400],
-        onTap: _onItemTapped,
-      ),
-      floatingActionButton: _selectedIndex != 2
-          ? null
-          : Align(
-              child: FloatingActionButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => ChatPost()));
-                },
-                child: Icon(Icons.border_color),
-                backgroundColor: Colors.black,
-              ),
-              alignment: Alignment(0.95, 0.95),
-            ),
-    );
+        bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          showSelectedLabels: false,
+          showUnselectedLabels: false,
+          items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+                icon: Icon(Icons.psychology_alt_outlined), label: ""),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.people_outlined), label: ""),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.question_answer_outlined), label: ""),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.person_2_outlined), label: ""),
+          ],
+          currentIndex: _selectedIndex,
+          selectedItemColor: Colors.brown[400],
+          onTap: _onItemTapped,
+        ),
+        floatingActionButton: switchFloatingButton(_selectedIndex));
   }
 }

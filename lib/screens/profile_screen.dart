@@ -1,9 +1,6 @@
 import 'package:chats/components/profile_menu.dart';
 import 'package:chats/screens/upload_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
-import '../apis/user_repository.dart';
 
 class Profile extends StatelessWidget {
   Profile({super.key});
@@ -41,7 +38,7 @@ class Profile extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 30),
-          Text("${context.read<UserProvider>().name}"),
+          // Text("${context.read<UserProvider>().name}"),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             child: Column(

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -45,11 +46,30 @@ class _LogOutState extends State<LogOut> {
     try {
       var res = await http.post(Uri.parse(url),
           body: body, headers: {"content-type": "application/json"});
-
+      final token = jsonDecode(res.body)["token"];
+      final fire_token = jsonDecode(res.body)["fire_token"];
       if (res.statusCode == 200) {
-        await storage
-            .write(key: "token", value: jsonDecode(res.body)["token"])
-            .then((value) => Navigator.of(context).pushNamed("/main"));
+        print(token);
+        print(fire_token);
+        try {
+          final userCredential =
+              await FirebaseAuth.instance.signInWithCustomToken(fire_token);
+          print("Sign-in successful.");
+        } on FirebaseAuthException catch (e) {
+          switch (e.code) {
+            case "invalid-custom-token":
+              print("The supplied token is not a Firebase custom auth token.");
+              break;
+            case "custom-token-mismatch":
+              print("The supplied token is for a different Firebase project.");
+              break;
+            default:
+              print("Unkown error.");
+          }
+        }
+        await storage.write(key: "token", value: token);
+        // .then((value) => Navigator.of(context).pushNamed("/main"));
+        print(token);
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context)
