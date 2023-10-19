@@ -1,11 +1,10 @@
-import 'package:chats/apis/user_repository.dart';
 import 'package:chats/providers/post_provider.dart';
+import 'package:chats/providers/user_profile_provider.dart';
 import 'package:chats/screens/logout_screen.dart';
 import 'package:chats/screens/main_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 
@@ -18,7 +17,6 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  FlutterSecureStorage.setMockInitialValues({});
   runApp(const MyApp());
 }
 
@@ -33,8 +31,12 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (context) => UserProvider()),
-          ChangeNotifierProvider(create: (context) => PostProvider()),
+          ChangeNotifierProvider(
+            create: (context) => PostProvider(),
+          ),
+          ChangeNotifierProvider(
+            create: (context) => UserProfileProvider(),
+          ),
         ],
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
@@ -53,7 +55,6 @@ class _MyAppState extends State<MyApp> {
             stream: FirebaseAuth.instance.authStateChanges(),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                // print(snapshot.data);
                 return const MyProfile();
               }
               return const LogOut();

@@ -2,16 +2,18 @@ import 'dart:convert';
 import 'package:chats/models/public_user.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
 
-final FlutterSecureStorage storage = FlutterSecureStorage();
+// final FlutterSecureStorage storage = FlutterSecureStorage();
 
 class UserRepository {
+  static final FlutterSecureStorage storage = FlutterSecureStorage();
   Future<String?> _authRequest(
       {required String method, required String url, Map? body}) async {
     // Map<String, dynamic>? body}) async {
     var token = await storage.read(key: "token");
+    print(token);
     http.Request request =
         http.Request(method, Uri.parse("http://127.0.0.1:8000/api/v1" + url));
     request.headers.clear();

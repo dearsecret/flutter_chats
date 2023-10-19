@@ -48,13 +48,12 @@ class _LogOutState extends State<LogOut> {
           body: body, headers: {"content-type": "application/json"});
       final token = jsonDecode(res.body)["token"];
       final fire_token = jsonDecode(res.body)["fire_token"];
+      await storage.write(key: "token", value: token);
       if (res.statusCode == 200) {
         print(token);
-        print(fire_token);
         try {
-          final userCredential =
-              await FirebaseAuth.instance.signInWithCustomToken(fire_token);
           print("Sign-in successful.");
+          return await FirebaseAuth.instance.signInWithCustomToken(fire_token);
         } on FirebaseAuthException catch (e) {
           switch (e.code) {
             case "invalid-custom-token":
@@ -67,7 +66,7 @@ class _LogOutState extends State<LogOut> {
               print("Unkown error.");
           }
         }
-        await storage.write(key: "token", value: token);
+
         // .then((value) => Navigator.of(context).pushNamed("/main"));
         print(token);
       } else {

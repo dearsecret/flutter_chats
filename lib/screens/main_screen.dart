@@ -1,5 +1,6 @@
 import 'package:chats/components/appbars/default_appbar.dart';
 import 'package:chats/screens/party_screen.dart';
+import 'package:chats/screens/post_screen.dart';
 import 'package:chats/screens/posts_write_screen.dart';
 import 'package:chats/screens/profile_screen.dart';
 import 'package:chats/screens/service_screen.dart';
@@ -7,11 +8,7 @@ import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:provider/provider.dart';
 
-import '../apis/user_repository.dart';
-import 'chat_post_screen.dart';
-import 'chat_screen.dart';
 // provider => analysis_options.yaml needs to delete "include"
 // flutter_secure_storage needs to settings 안드로이드
 
@@ -29,8 +26,8 @@ class _MyProfileState extends State<MyProfile> {
     storage.delete(key: "token");
     clearDiskCachedImages();
     clearMemoryImageCache();
-    context.read<UserProvider>().deleteInfo();
-    Navigator.pushNamed(context, '/');
+
+    // Navigator.pushNamed(context, '/');
     DefaultCacheManager().emptyCache();
   }
 
@@ -38,7 +35,7 @@ class _MyProfileState extends State<MyProfile> {
     userInfo = await storage.read(key: 'token');
     if (userInfo == null) {
       print('로그인 페이지로 이동');
-      Navigator.pushNamed(context, '/logout');
+      // Navigator.pushNamed(context, '/logout');
     } else {}
   }
 
@@ -48,10 +45,7 @@ class _MyProfileState extends State<MyProfile> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       checkUserState();
     });
-    final user = Provider.of<UserProvider>(context, listen: false);
-    final info = Provider.of<UserProvider>(context, listen: false);
-    user.fetchUser();
-    info.fetchUserInfo();
+
     print("user info fetched");
   }
 
@@ -66,7 +60,8 @@ class _MyProfileState extends State<MyProfile> {
   List<Widget> _widgetOptions = <Widget>[
     Service(),
     Party(),
-    Chat(),
+    // Chat(),
+    Post(),
     Profile(),
   ];
 
@@ -100,7 +95,7 @@ class _MyProfileState extends State<MyProfile> {
           child: FloatingActionButton(
             onPressed: () {
               Navigator.of(context)
-                  .push(MaterialPageRoute(builder: (context) => ChatPost()));
+                  .push(MaterialPageRoute(builder: (context) => PostWrite()));
             },
             child: Icon(Icons.border_color),
             backgroundColor: Colors.black,

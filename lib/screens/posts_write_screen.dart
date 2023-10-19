@@ -1,7 +1,12 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:image_picker/image_picker.dart';
 import '../apis/user_repository.dart';
+import 'package:http/http.dart' as http;
 
 class PostWrite extends StatefulWidget {
   const PostWrite({super.key});
@@ -23,21 +28,39 @@ class _PostWriteState extends State<PostWrite> {
     }
   }
 
-  // String uid,
-  // String picture,
-  void writeNewPost(String username, String title, String body) async {
-    final postData = {
-      // 'author': username,
-      'uid': FirebaseAuth.instance.currentUser!.uid,
-      // 'authorPic': picture,
-      'title': title,
-      'timestamp': ServerValue.timestamp,
-      // 'body': body,
-    };
-    final ref = FirebaseDatabase.instance.ref().child('posts').push();
-    ref.set(postData);
+  final FlutterSecureStorage storage = FlutterSecureStorage();
+  sendPost() async {
+    Map data = {"title": title, "content": content};
+    if (file != null) {
+      final ref = await FirebaseStorage.instance
+          .ref()
+          .child("posts/${DateTime.now().microsecondsSinceEpoch}");
+      await ref.putFile(file!);
+      data["image"] = await ref.getDownloadURL();
+      print(data["image"]);
+    }
+    var token = await storage.read(key: "token");
+    String url = "http://127.0.0.1:8000/api/v1/chats/post";
+    await http.post(Uri.parse(url),
+        headers: {
+          "Authorization": "$token",
+          "Content-Type": "Application/json"
+        },
+        body: jsonEncode(data));
   }
 
+  File? file;
+  putImage() async {
+    final picker = ImagePicker();
+    final pickedImage = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedImage != null) {
+      setState(() {
+        file = File(pickedImage.path);
+      });
+    }
+  }
+
+  bool isChecked = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -99,18 +122,34 @@ class _PostWriteState extends State<PostWrite> {
                   ),
                 ),
               ),
-              IconButton(
-                onPressed: () {
-                  _tryValidation();
-                  // repository.chat({
-                  //   "title": title,
-                  //   "content": content,
-                  // });
-                  // TODO 데이터 구조화 && uid 설정
-                  writeNewPost("TEST", title, content);
-                  Navigator.of(context).pop();
-                },
-                icon: Icon(Icons.send),
+              if (file != null) Image.file(file!),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  IconButton(
+                      onPressed: () {
+                        FocusScope.of(context).unfocus();
+                        putImage();
+                      },
+                      icon: Icon(Icons.add_photo_alternate_outlined)),
+                  Checkbox(
+                      fillColor: MaterialStateColor.resolveWith(
+                          (states) => Colors.black),
+                      value: isChecked,
+                      onChanged: (value) {
+                        setState(() {
+                          isChecked = value!;
+                        });
+                      }),
+                  IconButton(
+                    onPressed: () {
+                      _tryValidation();
+                      sendPost();
+                      Navigator.of(context).pop();
+                    },
+                    icon: Icon(Icons.send),
+                  ),
+                ],
               ),
             ],
           ),

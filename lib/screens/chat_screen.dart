@@ -1,8 +1,8 @@
-import 'package:chats/apis/user_repository.dart';
-import 'package:chats/components/chat_list.dart';
-import 'package:chats/screens/chat_detail_screen.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:async';
+import 'package:chats/providers/post_provider.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class Chat extends StatefulWidget {
   const Chat({super.key});
@@ -12,116 +12,218 @@ class Chat extends StatefulWidget {
 
 class _ChatState extends State<Chat> {
   late ScrollController _controller;
-  var repository = UserRepository();
-  int? _initialPk;
-  List _myList = [];
-  int totalLength = 0;
-  bool _isLoading = false;
-  bool _hasData = true;
+  late DatabaseReference ref;
+  var childAddedListener;
+  var childChangedListener;
 
-  @override
-  void dispose() {
-    super.dispose();
-    _controller.dispose();
-  }
-
-  @override
+  // @override
   void initState() {
+    _controller = new ScrollController()..addListener(_scorollListener);
+
+    FirebaseDatabase database;
+    database = FirebaseDatabase.instance;
+    database.setPersistenceEnabled(true);
+    database.setPersistenceCacheSizeBytes(10000000);
+    ref = database.ref('posts');
+
+    //.orderByChild("timestamp").startAt(1696836938330)
+    fetchDatabase();
+    childAddedListener =
+        ref.limitToLast(1).onChildAdded.listen(_onEntryAddedPost);
+    childChangedListener =
+        ref.limitToLast(20).onChildChanged.listen(_onEntryChangedPost);
     super.initState();
-    _controller = ScrollController()..addListener(_scrollListener);
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      _getChatList();
-    });
   }
 
-  _getChatList() async {
-    _isLoading = true;
-    List result = await repository.chatMore(totalLength);
-    // print(result);
-    setState(() {
-      if (result.isEmpty) {
-        _hasData = false;
-        return;
-      }
-      if (_myList.isEmpty) {
-        _initialPk = result[0]["pk"];
-      }
-      _myList.addAll(result);
-      _isLoading = false;
-    });
-  }
-
-  _scrollListener() async {
-    if (_isLoading | !_hasData) return;
+  _scorollListener() {
+    if (isLoading | !isMore) return;
     if (_controller.offset == _controller.position.maxScrollExtent) {
-      _getChatList();
+      isLoading = true;
+      getMore();
     }
   }
 
-  Future _refresh() async {
-    _initialPk = null;
-    _myList = [];
-    totalLength = 0;
-    _isLoading = false;
-    _hasData = true;
+  orderByTimestamp(Object? value) {
+    return Map.from(value as Map).entries.toList()
+      ..sort((a, b) => b.value['timestamp'].compareTo(a.value['timestamp']));
+  }
 
-    _getChatList();
+  fetchDatabase() async {
+    await ref.limitToLast(20).get().then((snapshot) {
+      if (snapshot.value != null) {
+        setState(() {
+          posts = orderByTimestamp(snapshot.value);
+          // posts = Map.from(snapshot.value as Map).entries.toList()
+          //   ..sort(
+          //       (a, b) => b.value['timestamp'].compareTo(a.value['timestamp']));
+        });
+      }
+    }).catchError((error) {
+      print("THIS IS FETCHED ERROR : $error");
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    childAddedListener.cancel();
+    childChangedListener.cancel();
+    posts.clear();
+    super.dispose();
+  }
+
+  List posts = [];
+  bool isFetched = false;
+  _onEntryAddedPost(DatabaseEvent event) {
+    if (mounted && event.snapshot.exists && isFetched) {
+      var snapshot = event.snapshot;
+      if (posts.isNotEmpty) {
+        if (snapshot.key != posts.first.key) {
+          setState(() {
+            posts.insert(0, MapEntry(snapshot.key, snapshot.value));
+          });
+        }
+      } else {
+        setState(() {
+          posts.insert(0, MapEntry(snapshot.key, snapshot.value));
+        });
+      }
+    } else {
+      print("successful connected && it will get the first data");
+      isFetched = true;
+    }
+  }
+
+  _onEntryChangedPost(DatabaseEvent event) {
+    print("changed");
+    if (mounted && event.snapshot.exists) {
+      var snapshot = event.snapshot;
+      var old = posts.firstWhere((entry) {
+        return entry.key == snapshot.key;
+      });
+      if (old != null) {
+        setState(() {
+          posts[posts.indexOf(old)] = MapEntry(snapshot.key, snapshot.value);
+        });
+      }
+    }
+  }
+
+  // TODO : IMPLEMENT refresh Function
+  Future _refresh() async {
+    posts.clear();
+    setState(() {
+      posts;
+    });
+    _delete();
+    // _getDataList();
+  }
+
+  _delete() async {
+    final ref = FirebaseDatabase.instance.ref("posts/");
+    print("delete");
+    await ref.remove();
+  }
+
+  String selectedKey = "";
+// selectedKey
+  incrementCounter() async {
+    await FirebaseDatabase.instance
+        .ref("posts/$selectedKey/views")
+        .set(ServerValue.increment(1));
+    print("increment views");
+  }
+
+  // var ref = FirebaseDatabase.instance.ref('posts');
+  // Stream<DatabaseEvent> _getCountViews() async* {
+  //   await for (var event in ref.limitToLast(1).onChildAdded) {
+  //     print("last one added");
+  //     // stream 데이터의 흐름에 따라 Listener를 종료할 수 있도록 한다.
+  //     yield event;
+  //   }
+  // }
+
+  bool isMore = true;
+  bool isLoading = false;
+  getMore() {
+    print(posts.last);
+    ref
+        .orderByChild("timestamp")
+        .endBefore(posts.last.value["timestamp"])
+        .limitToLast(5)
+        .get()
+        .then((snapshot) {
+      if (snapshot.value != null) {
+        setState(() {
+          posts.addAll(orderByTimestamp(snapshot.value));
+        });
+      } else {
+        setState(() {
+          isMore = false;
+        });
+      }
+      setState(() {
+        isLoading = false;
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.read<PostProvider>();
+    print(provider.data);
     return RefreshIndicator(
-      onRefresh: _refresh,
-      child: StreamBuilder(
-        stream: FirebaseFirestore.instance
-            .collection("chats")
-            .where("pk", isGreaterThan: _initialPk)
-            .orderBy("pk", descending: true)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            var docs = snapshot.data!.docs;
-            totalLength = docs.length + _myList.length;
-            List result = [...docs, ..._myList];
-
-            return ListView.separated(
+        onRefresh: _refresh,
+        child: posts.isEmpty
+            ? Text("No data")
+            : ListView.separated(
                 separatorBuilder: (context, index) => Divider(),
                 controller: _controller,
-                itemCount: result.length + 1,
+                physics: AlwaysScrollableScrollPhysics(),
+                itemCount: posts.length + 1,
                 itemBuilder: (context, index) {
-                  if (index < result.length) {
+                  if (index < posts.length) {
                     return GestureDetector(
                       onTap: () {
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => ChatDetail(
-                                  id: result[index]["pk"],
-                                  title: result[index]["title"],
-                                  timestamp: result[index]["created_at"],
-                                )));
+                        setState(() {
+                          selectedKey = posts[index].key;
+                        });
+                        incrementCounter();
+                        // Navigator.of(context).push(MaterialPageRoute(
+                        //   builder: (context) => PostDetail(
+                        //     docId: selectedKey,
+                        //     docTitle: posts[index].value["title"],
+                        //   ),
+                        // ));
                       },
-                      child: ChatList(result[index]["pk"],
-                          result[index]["title"], result[index]["created_at"]),
-                    );
-                  }
-                  return !_hasData && _isLoading
-                      ? null
-                      : Center(
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 32),
-                            child: CircularProgressIndicator(),
+                      child: ListTile(
+                          title: Text("${posts[index].value["title"]}"),
+                          subtitle: Row(
+                            children: [
+                              Text("${posts[index].value["views"] ?? 0}"),
+                              Icon(Icons.pan_tool_alt_outlined),
+                              Expanded(
+                                child: Text(
+                                  "${posts[index].value["uid"] ?? 'Anonymous'}",
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                  softWrap: false,
+                                ),
+                              )
+                            ],
                           ),
-                        );
-                });
-          } else {
-            return Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 32),
-                child: CircularProgressIndicator(),
-              ),
-            );
-          }
-        },
-      ),
-    );
+                          trailing: Text("${posts[index].value["timestamp"]}")),
+                    );
+                  } else {
+                    return isMore
+                        ? Center(
+                            child: CircularProgressIndicator(),
+                          )
+                        : Center(
+                            child: Text("데이터가 존재하지 않습니다."),
+                          );
+                  }
+                },
+              ));
   }
 }
