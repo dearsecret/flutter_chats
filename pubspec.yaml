@@ -45,6 +45,7 @@ dependencies:
   http: ^1.1.0
   image_picker: ^1.0.4
   extended_image: ^4.0.0
+  timeago: ^3.5.0
 
 dev_dependencies:
   flutter_test:

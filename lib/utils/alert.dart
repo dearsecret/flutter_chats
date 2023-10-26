@@ -48,3 +48,16 @@ sendMessage(int pk, String content) async {
       headers: {"Authorization": token!, "Content-Type": "Application/json"},
       body: jsonEncode(data));
 }
+
+void _showModalBottomSheet(BuildContext context) {
+  showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return FractionallySizedBox(
+          child: Text("hello"),
+          heightFactor: 0.9,
+        );
+      },
+      useSafeArea: true,
+      isScrollControlled: true);
+}

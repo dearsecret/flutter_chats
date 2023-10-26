@@ -10,60 +10,31 @@ class Party extends StatefulWidget {
 class _PartyState extends State<Party> {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(child: Text("helloasdxasdasdadasdsa")),
-            Container(
-              child: Row(
-                children: [
-                  InkWell(
-                    customBorder: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                    splashColor: Colors.grey,
-                    onTap: () {},
-                    child: Icon(
-                      Icons.search,
-                      size: 30,
-                    ),
-                  ),
-                  InkWell(
-                    customBorder: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                    splashColor: Colors.grey,
-                    onTap: () {},
-                    child: Icon(
-                      Icons.star_border,
-                      size: 30,
-                    ),
-                  ),
-                  InkWell(
-                    customBorder: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                    splashColor: Colors.grey,
-                    onTap: () {},
-                    child: Icon(
-                      Icons.shopping_cart_outlined,
-                      size: 30,
-                    ),
-                  ),
-                  InkWell(
-                    customBorder: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                    splashColor: Colors.grey,
-                    onTap: () {},
-                    child: Icon(
-                      Icons.notifications_none,
-                      size: 30,
-                    ),
-                  ),
-                ],
-              ),
-            )
-          ],
-        )
+    return CustomScrollView(
+      slivers: [
+        SliverAppBar(
+          primary: false,
+          expandedHeight: 150.0,
+          floating: true,
+          pinned: false,
+          flexibleSpace: const FlexibleSpaceBar(
+            title: Text('Available seats'),
+          ),
+        ),
+        // SliverList(
+        //   delegate: SliverChildBuilderDelegate(
+        //     (context, index) {
+        //       return;
+        //     },
+        //   ),
+        // ),
+        SliverList(
+            delegate: SliverChildListDelegate([
+          ...[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((e) => Container(
+                height: 120,
+                child: Text("$e"),
+              ))
+        ])),
       ],
     );
   }

@@ -1,4 +1,3 @@
-import 'package:chats/components/appbars/default_appbar.dart';
 import 'package:chats/screens/party_screen.dart';
 import 'package:chats/screens/post_screen.dart';
 import 'package:chats/screens/posts_write_screen.dart';
@@ -51,12 +50,6 @@ class _MyProfileState extends State<MyProfile> {
 
   int _selectedIndex = 0;
 
-  List<Widget?> _appbarOptions = <Widget?>[
-    null,
-    null,
-    DefaultAppbar(),
-    null,
-  ];
   List<Widget> _widgetOptions = <Widget>[
     Service(),
     Party(),
@@ -112,19 +105,12 @@ class _MyProfileState extends State<MyProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: _appbarOptions.elementAt(_selectedIndex) == null
-            ? null
-            : PreferredSize(
-                preferredSize: AppBar().preferredSize,
-                child: _appbarOptions.elementAt(_selectedIndex)!),
-        body: SafeArea(
-          child: GestureDetector(
-            onTap: () {
-              FocusScope.of(context).unfocus();
-            },
-            child: Center(
-              child: _widgetOptions.elementAt(_selectedIndex),
-            ),
+        body: GestureDetector(
+          onTap: () {
+            FocusScope.of(context).unfocus();
+          },
+          child: Center(
+            child: _widgetOptions.elementAt(_selectedIndex),
           ),
         ),
         bottomNavigationBar: BottomNavigationBar(

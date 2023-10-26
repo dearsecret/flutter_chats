@@ -43,6 +43,7 @@ class _LogOutState extends State<LogOut> {
     };
     var body = jsonEncode(data);
     String url = "http://127.0.0.1:8000/api/v1/users/jwt-login";
+
     try {
       var res = await http.post(Uri.parse(url),
           body: body, headers: {"content-type": "application/json"});
