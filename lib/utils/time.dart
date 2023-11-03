@@ -1,7 +1,6 @@
 import 'package:timeago/timeago.dart';
 
 class TimeUtil {
-  late int milliseconds;
   static setLocalMessages() {
     setLocaleMessages('ko', KoMessages());
   }
@@ -20,7 +19,7 @@ class KoMessages implements LookupMessages {
   String suffixAgo() => '전';
   String suffixFromNow() => '후';
   String lessThanOneMinute(int seconds) => '방금';
-  String aboutAMinute(int minutes) => '방금';
+  String aboutAMinute(int minutes) => '1분';
   String minutes(int minutes) => '$minutes분';
   String aboutAnHour(int minutes) => '1시간';
   String hours(int hours) => '$hours시간';

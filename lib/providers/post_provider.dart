@@ -44,14 +44,25 @@ class PostProvider extends ChangeNotifier {
           "Content-Type": "Application/json",
         }).then((resp) {
       print(resp.body);
-      return _postList.addAll(jsonDecode(resp.body));
+      return _postList.addAll(jsonDecode(utf8.decode(resp.bodyBytes)));
     });
     notifyListeners();
   }
 
   _onChildChanged(DatabaseEvent event) {
     // posts/add/data 변경시
-    _postList.insert(0, event.snapshot.value);
+    print(event.snapshot.key);
+    print(event.snapshot.value);
+    print(event.snapshot.value.runtimeType);
+    final value = event.snapshot.value as Map;
+    print(value.runtimeType);
+    print(value["pk"]);
+    switch (event.snapshot.key) {
+      case "add":
+        _postList.insert(0, event.snapshot.value);
+        break;
+    }
+
     notifyListeners();
   }
 
@@ -63,13 +74,15 @@ class PostProvider extends ChangeNotifier {
         this._setToken = token;
         print("token saved");
         getData(token)
-            .then((resp) => _postList.addAll(jsonDecode(resp.body)))
+            .then((resp) =>
+                _postList.addAll(jsonDecode(utf8.decode(resp.bodyBytes))))
             .whenComplete(() {
           notifyListeners();
           print("works");
           childChangedListener =
-              database.ref("posts/add").onChildChanged.listen(_onChildChanged);
+              database.ref("posts").onChildChanged.listen(_onChildChanged);
           print("data fetched");
+          print(_postList);
         });
       } else {
         // logout

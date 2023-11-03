@@ -1,3 +1,4 @@
+import 'package:chats/providers/party_provider.dart';
 import 'package:chats/providers/post_provider.dart';
 import 'package:chats/providers/user_profile_provider.dart';
 import 'package:chats/screens/logout_screen.dart';
@@ -36,6 +37,9 @@ class _MyAppState extends State<MyApp> {
           ),
           ChangeNotifierProvider(
             create: (context) => UserProfileProvider(),
+          ),
+          ChangeNotifierProvider(
+            create: (context) => PartyProvider(),
           ),
         ],
         child: MaterialApp(

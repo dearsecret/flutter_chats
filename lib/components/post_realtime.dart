@@ -1,7 +1,8 @@
+import 'package:chats/utils/time.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
+import 'package:timer_builder/timer_builder.dart';
 import '../providers/post_provider.dart';
 import '../screens/post_detail_screen.dart';
 
@@ -26,6 +27,13 @@ class _RealtimeState extends State<Realtime> {
   int? selectedKey;
 
   Future _refresh() async {}
+
+  @override
+  void initState() {
+    TimeUtil.setLocalMessages();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<PostProvider>();
@@ -62,18 +70,53 @@ class _RealtimeState extends State<Realtime> {
                 },
                 child: ListTile(
                     leading: Text("${data[index]["pk"]}"),
-                    title: Text(
-                      "${data[index]["title"]}",
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                    subtitle: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            "${data[index]["created_at"]}",
+                    title: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "${data[index]["title"]}",
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
+                          ),
+                        ]),
+                    subtitle: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.circle,
+                          color: data[index]["writer"]["gender"]
+                              ? Colors.blueAccent[100]
+                              : Colors.red[200],
+                          size: 11,
+                        ),
+                        SizedBox(
+                          width: 12,
+                        ),
+                        Icon(
+                          Icons.thumb_up_alt_outlined,
+                          size: 14,
+                        ),
+                        Text(
+                          "${data[index]["count_likes"]}",
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(
+                          width: 8,
+                        ),
+                        Text("${data[index]["count_dislikes"]}"),
+                        Icon(
+                          Icons.thumb_down_alt_outlined,
+                          size: 14,
+                        ),
+                        SizedBox(
+                          width: 12,
+                        ),
+                        TimerBuilder.periodic(
+                          Duration(seconds: 3),
+                          builder: (context) => Text(
+                            "${TimeUtil.timeAgo(milliseconds: DateTime.parse(data[index]["created_at"]).millisecondsSinceEpoch)}",
+                            textAlign: TextAlign.center,
                           ),
                         ),
                       ],

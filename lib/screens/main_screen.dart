@@ -1,6 +1,5 @@
 import 'package:chats/screens/party_screen.dart';
 import 'package:chats/screens/post_screen.dart';
-import 'package:chats/screens/posts_write_screen.dart';
 import 'package:chats/screens/profile_screen.dart';
 import 'package:chats/screens/service_screen.dart';
 import 'package:extended_image/extended_image.dart';
@@ -65,42 +64,42 @@ class _MyProfileState extends State<MyProfile> {
     });
   }
 
-  Widget? switchFloatingButton(_selectedIndex) {
-    Widget newButton = Container();
-    switch (_selectedIndex) {
-      case 0:
-        break;
-      case 1:
-        newButton = Align(
-          child: FloatingActionButton(
-            onPressed: () {
-              Navigator.of(context)
-                  .push(MaterialPageRoute(builder: (context) => PostWrite()));
-            },
-            child: Icon(Icons.border_color),
-            backgroundColor: Colors.black,
-          ),
-          alignment: Alignment(0.95, 0.95),
-        );
-        break;
-      case 2:
-        newButton = Align(
-          child: FloatingActionButton(
-            onPressed: () {
-              Navigator.of(context)
-                  .push(MaterialPageRoute(builder: (context) => PostWrite()));
-            },
-            child: Icon(Icons.border_color),
-            backgroundColor: Colors.black,
-          ),
-          alignment: Alignment(0.95, 0.95),
-        );
-        break;
-      case 3:
-        break;
-    }
-    return newButton;
-  }
+  // Widget? switchFloatingButton(_selectedIndex) {
+  //   Widget newButton = Container();
+  //   switch (_selectedIndex) {
+  //     case 0:
+  //       break;
+  //     case 1:
+  //       newButton = Align(
+  //         child: FloatingActionButton(
+  //           onPressed: () {
+  //             Navigator.of(context)
+  //                 .push(MaterialPageRoute(builder: (context) => PostWrite()));
+  //           },
+  //           child: Icon(Icons.border_color),
+  //           backgroundColor: Colors.black,
+  //         ),
+  //         alignment: Alignment(0.95, 0.95),
+  //       );
+  //       break;
+  //     case 2:
+  //       newButton = Align(
+  //         child: FloatingActionButton(
+  //           onPressed: () {
+  //             Navigator.of(context)
+  //                 .push(MaterialPageRoute(builder: (context) => PostWrite()));
+  //           },
+  //           child: Icon(Icons.border_color),
+  //           backgroundColor: Colors.black,
+  //         ),
+  //         alignment: Alignment(0.95, 0.95),
+  //       );
+  //       break;
+  //     case 3:
+  //       break;
+  //   }
+  //   return newButton;
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -130,7 +129,7 @@ class _MyProfileState extends State<MyProfile> {
           currentIndex: _selectedIndex,
           selectedItemColor: Colors.brown[400],
           onTap: _onItemTapped,
-        ),
-        floatingActionButton: switchFloatingButton(_selectedIndex));
+        ));
+    // floatingActionButton: switchFloatingButton(_selectedIndex));
   }
 }

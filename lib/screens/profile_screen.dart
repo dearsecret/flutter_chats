@@ -1,3 +1,4 @@
+import 'package:chats/components/logout_button.dart';
 import 'package:chats/providers/user_profile_provider.dart';
 import 'package:chats/screens/profile_detail_screen.dart';
 import 'package:chats/screens/profile_preview.dart';
@@ -122,6 +123,7 @@ class _ProfileState extends State<Profile> {
                           onPressed: () {},
                           child: MenuItem(
                               title: "설정", iconData: Icons.settings_outlined)),
+                      SignOut()
                     ],
                   )
                 ],

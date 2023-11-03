@@ -61,3 +61,27 @@ void _showModalBottomSheet(BuildContext context) {
       useSafeArea: true,
       isScrollControlled: true);
 }
+
+showConfirm(BuildContext context, int pk) {
+  showDialog(
+      barrierDismissible: true,
+      context: context,
+      builder: (context) {
+        return AlertDialog(content: Text("삭제하시겠습니까?"), actions: [
+          Container(
+            child: ElevatedButton(
+              onPressed: () {},
+              child: Text("삭제하기"),
+            ),
+          ),
+          Container(
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("취소"),
+            ),
+          )
+        ]);
+      });
+}
