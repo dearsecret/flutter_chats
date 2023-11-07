@@ -1,6 +1,11 @@
 import 'package:chats/components/post_realtime.dart';
+import 'package:chats/components/widget_search.dart';
+import 'package:chats/components/widget_shop.dart';
 import 'package:chats/screens/posts_write_screen.dart';
 import 'package:flutter/material.dart';
+
+import '../components/widget_alarm.dart';
+import '../components/widget_my.dart';
 
 class Post extends StatefulWidget {
   const Post({super.key});
@@ -37,11 +42,11 @@ class _PostState extends State<Post> with TickerProviderStateMixin {
                 child: Text("톡톡"),
               ),
               actions: [
-                Icon(Icons.search),
-                Icon(Icons.shopping_bag_outlined),
-                Icon(Icons.notifications_active_outlined),
+                Search(),
+                Shop(),
+                My(),
+                Alarm(),
               ],
-              toolbarHeight: 50,
               pinned: true,
               floating: true,
               snap: true,

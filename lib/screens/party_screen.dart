@@ -1,3 +1,7 @@
+import 'package:chats/components/widget_alarm.dart';
+import 'package:chats/components/widget_my.dart';
+import 'package:chats/components/widget_search.dart';
+import 'package:chats/components/widget_shop.dart';
 import 'package:chats/providers/party_provider.dart';
 import 'package:chats/screens/party_detail.dart';
 import 'package:chats/screens/party_write.dart';
@@ -52,7 +56,12 @@ class _PartyState extends State<Party> with SingleTickerProviderStateMixin {
             // flexibleSpace: const FlexibleSpaceBar(
             //   title: Text('Available seats'),
             // ),
-            actions: [],
+            actions: [
+              Search(),
+              Shop(),
+              My(),
+              Alarm(),
+            ],
             floating: true,
             snap: true,
             bottom: TabBar(
