@@ -39,7 +39,10 @@ class _PostState extends State<Post> with TickerProviderStateMixin {
             SliverAppBar(
               title: Align(
                 alignment: Alignment.centerLeft,
-                child: Text("톡톡"),
+                child: Text(
+                  " 톡톡",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
               actions: [
                 Search(),

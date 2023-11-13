@@ -28,7 +28,7 @@ class _PartyWriteState extends State<PartyWrite> {
     final photo = await uploadPhoto();
     print(photo);
     http.Response response = await http.post(
-        Uri.parse("http://127.0.0.1:8000/api/v1/meetings/init"),
+        Uri.parse("http://127.0.0.1:8000/api/v1/meetings/me"),
         headers: {"Authorization": token!, "Content-Type": "Application/json"},
         body: jsonEncode({
           "title": _title,

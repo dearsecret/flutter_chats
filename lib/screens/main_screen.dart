@@ -118,13 +118,13 @@ class _MyProfileState extends State<MyProfile> {
           showUnselectedLabels: false,
           items: const <BottomNavigationBarItem>[
             BottomNavigationBarItem(
-                icon: Icon(Icons.psychology_alt_outlined), label: ""),
+                icon: Icon(Icons.person_outline_outlined), label: ""),
             BottomNavigationBarItem(
                 icon: Icon(Icons.people_outlined), label: ""),
             BottomNavigationBarItem(
                 icon: Icon(Icons.question_answer_outlined), label: ""),
             BottomNavigationBarItem(
-                icon: Icon(Icons.person_2_outlined), label: ""),
+                icon: Icon(Icons.more_horiz_outlined), label: ""),
           ],
           currentIndex: _selectedIndex,
           selectedItemColor: Colors.brown[400],

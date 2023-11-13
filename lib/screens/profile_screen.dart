@@ -1,12 +1,15 @@
+import 'dart:convert';
+
 import 'package:chats/components/logout_button.dart';
 import 'package:chats/providers/user_profile_provider.dart';
 import 'package:chats/screens/profile_detail_screen.dart';
 import 'package:chats/screens/profile_preview.dart';
+import 'package:chats/utils/alert.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../components/profile_menu.dart';
+import 'package:http/http.dart' as http;
 
 class Profile extends StatefulWidget {
   Profile({super.key});
@@ -15,6 +18,26 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
+  Map data = {};
+  getProfile() async {
+    final token = await storage.read(key: "token");
+    http.Response response = await http.get(
+      Uri.parse("http://127.0.0.1:8000/api/v1/users/me"),
+      headers: {"Authorization": token!, "Content-Type": "Application/json"},
+    );
+    if (response.statusCode == 200) {
+      setState(() {
+        data = jsonDecode(utf8.decode(response.bodyBytes));
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    getProfile();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     var thumbnail = context
@@ -97,6 +120,17 @@ class _ProfileState extends State<Profile> {
                     ],
                   ),
                   const SizedBox(height: 30),
+                  Text("${data["name"]}"),
+                  Container(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.black,
+                      ),
+                      onPressed: () {},
+                      child: Text("포인트 ${data["point"]}"),
+                    ),
+                  ),
                   // Text("${context.read<UserProvider>().name}"),
                   Column(
                     children: [

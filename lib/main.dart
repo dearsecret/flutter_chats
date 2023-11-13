@@ -1,3 +1,4 @@
+import 'package:chats/providers/daily_provider.dart';
 import 'package:chats/providers/party_provider.dart';
 import 'package:chats/providers/post_provider.dart';
 import 'package:chats/providers/user_profile_provider.dart';
@@ -34,6 +35,9 @@ class _MyAppState extends State<MyApp> {
         providers: [
           ChangeNotifierProvider(
             create: (context) => PostProvider(),
+          ),
+          ChangeNotifierProvider(
+            create: (context) => DailyProvider(),
           ),
           ChangeNotifierProvider(
             create: (context) => UserProfileProvider(),

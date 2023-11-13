@@ -9,8 +9,8 @@ import 'package:timer_builder/timer_builder.dart';
 import '../utils/alert.dart';
 
 class PostDetail extends StatefulWidget {
-  int pk;
-  String title;
+  late final int pk;
+  late final title;
   PostDetail({super.key, required int this.pk, required String this.title});
 
   @override

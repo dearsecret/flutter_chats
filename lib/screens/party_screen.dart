@@ -50,7 +50,10 @@ class _PartyState extends State<Party> with SingleTickerProviderStateMixin {
           SliverAppBar(
             title: Align(
               alignment: Alignment.centerLeft,
-              child: Text("소모임"),
+              child: Text(
+                " 새로운 만남",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
             // expandedHeight: 150.0,
             // flexibleSpace: const FlexibleSpaceBar(

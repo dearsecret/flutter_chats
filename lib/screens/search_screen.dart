@@ -17,6 +17,8 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   String title = "";
   List data = [];
+  TextEditingController _controller = TextEditingController();
+
   search(String title) async {
     final token = await storage.read(key: "token");
     http.Response response = await http.get(
@@ -29,6 +31,12 @@ class _SearchScreenState extends State<SearchScreen> {
       });
       print(data);
     }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -53,24 +61,32 @@ class _SearchScreenState extends State<SearchScreen> {
               padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
               child: Column(
                 children: [
-                  Row(children: [
-                    Expanded(
-                        child: TextFormField(
-                      decoration: InputDecoration(
-                          hintText: "2글자 이상 입력하세요.",
-                          suffixIcon: IconButton(
-                              onPressed: () {
-                                search(title);
+                  if (data.isEmpty)
+                    Row(children: [
+                      Expanded(
+                          child: TextFormField(
+                        controller: _controller,
+                        textInputAction: TextInputAction.search,
+                        decoration: InputDecoration(
+                            hintText: "2글자 이상 입력하세요.",
+                            suffix: GestureDetector(
+                              onTap: () {
+                                _controller.clear();
                               },
-                              icon: Icon(Icons.search)),
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(20),
-                              borderSide: BorderSide(width: 1))),
-                      onChanged: (value) {
-                        title = value;
-                      },
-                    )),
-                  ]),
+                              child: Icon(Icons.clear),
+                            ),
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                borderSide: BorderSide(width: 1))),
+                        onChanged: (value) {
+                          title = value;
+                        },
+                        onFieldSubmitted: (value) {
+                          if (value.trim().length < 2 || value.isEmpty) return;
+                          search(title);
+                        },
+                      )),
+                    ]),
                   if (data.isNotEmpty)
                     Expanded(
                       child: GridView.builder(
@@ -78,6 +94,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           childAspectRatio: 1 / 1.618,
                           crossAxisCount: 3,
+                          crossAxisSpacing: 10,
                         ),
                         shrinkWrap: true,
                         itemCount: data.length,

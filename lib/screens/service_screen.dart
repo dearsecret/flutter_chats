@@ -1,4 +1,12 @@
+import 'package:chats/components/page_match.dart';
+import 'package:chats/components/page_past.dart';
+import 'package:chats/components/widget_alarm.dart';
+import 'package:chats/components/widget_shop.dart';
+import 'package:chats/providers/daily_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../components/page_today.dart';
 
 class Service extends StatefulWidget {
   const Service({super.key});
@@ -7,72 +15,94 @@ class Service extends StatefulWidget {
   State<Service> createState() => _ServiceState();
 }
 
-class _ServiceState extends State<Service> {
-  Future _refresh() async {}
+class _ServiceState extends State<Service> with SingleTickerProviderStateMixin {
+  _showGetPoint() async {
+    showDialog(
+      barrierDismissible: true,
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("리워드 지급"),
+          content: Text("데일리 카드 획득을 포기하고\n1 포인트가 지급됩니다."),
+          actions: [
+            ElevatedButton(
+                onPressed: () {
+                  // TODO : set API
+                  Navigator.of(context).pop();
+                },
+                child: Text("확인")),
+            ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text("취소")),
+          ],
+        );
+      },
+    );
+  }
+
+  List data = [];
+
+  late TabController _controller;
+  @override
+  void initState() {
+    _controller = TabController(length: 3, vsync: this);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: RefreshIndicator(
-        onRefresh: _refresh,
-        child: Container(
-          padding: EdgeInsets.all(10),
-          child: GridView.count(
-              mainAxisSpacing: 25,
-              crossAxisSpacing: 15,
-              childAspectRatio: 1 / 2,
-              crossAxisCount: 2,
-              children: List.generate(
-                12,
-                (index) => Stack(
-                  children: [
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      left: 0,
-                      bottom: 150,
-                      child: Container(
-                        margin: EdgeInsets.all(12),
-                        child: Container(
-                            // child: ,
-                            ),
-                        decoration: BoxDecoration(
-                          color: Colors.brown[400],
-                          borderRadius: BorderRadius.only(
-                            topRight: Radius.circular(30),
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              offset: Offset(1, 1),
-                              spreadRadius: 2,
-                              blurRadius: 5,
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      left: 0,
-                      child: AspectRatio(
-                        aspectRatio: 1 / 1,
-                        child: Container(
-                          margin: EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            boxShadow: [
-                              BoxShadow(spreadRadius: 1, blurRadius: 3)
-                            ],
-                            borderRadius: BorderRadius.all(Radius.circular(30)),
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    )
+    context.read<DailyProvider>();
+    return Scaffold(
+      body: NestedScrollView(
+          headerSliverBuilder: (context, innerBoxIsScrolled) {
+            return [
+              Container(
+                child: SliverAppBar(
+                  shadowColor: Colors.white,
+                  title: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(" APP NAME"),
+                  ),
+                  pinned: true,
+                  floating: true,
+                  snap: true,
+                  actions: [
+                    Shop(),
+                    Alarm(),
                   ],
+                  bottom: TabBar(controller: _controller, tabs: [
+                    Tab(
+                      text: "오늘의 프로필",
+                    ),
+                    Tab(
+                      text: "지나간 프로필",
+                    ),
+                    Tab(
+                      text: "매칭된 프로필",
+                    ),
+                  ]),
                 ),
-              )),
-        ),
-      ),
+              )
+            ];
+          },
+          body: TabBarView(
+            controller: _controller,
+            children: [
+              Today(),
+              Past(),
+              Match(),
+            ],
+          )),
     );
   }
 }

@@ -153,6 +153,7 @@ class UserProvider with ChangeNotifier {
   int selected = 0;
   String get name => _user.user!.name;
   String get id => _user.user!.pk;
+  int get point => _user.user!.points;
   Map<String, dynamic> get initializeImage {
     clearImages();
     _user.info!.photos.asMap().forEach((key, value) {

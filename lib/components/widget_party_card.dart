@@ -2,10 +2,10 @@ import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 
 class PartyCard extends StatelessWidget {
-  late String title;
-  late bool gender;
-  late int index;
-  late ExtendedImage image;
+  late final String title;
+  late final bool gender;
+  late final int index;
+  late final ExtendedImage image;
   PartyCard(
       {super.key,
       required Map data,
