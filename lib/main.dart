@@ -1,7 +1,7 @@
 import 'package:chats/providers/daily_provider.dart';
 import 'package:chats/providers/party_provider.dart';
 import 'package:chats/providers/post_provider.dart';
-import 'package:chats/providers/user_profile_provider.dart';
+import 'package:chats/providers/user_provider.dart';
 import 'package:chats/screens/logout_screen.dart';
 import 'package:chats/screens/main_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -40,23 +40,22 @@ class _MyAppState extends State<MyApp> {
             create: (context) => DailyProvider(),
           ),
           ChangeNotifierProvider(
-            create: (context) => UserProfileProvider(),
+            create: (context) => PartyProvider(),
           ),
           ChangeNotifierProvider(
-            create: (context) => PartyProvider(),
+            create: (context) => UserProvider(),
           ),
         ],
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
-          theme: ThemeData(
-            textTheme: TextTheme(
-              titleMedium: TextStyle(color: Colors.brown[400]),
-              titleLarge: TextStyle(color: Colors.brown[200]),
-            ),
-            textSelectionTheme:
-                TextSelectionThemeData(cursorColor: Colors.brown[600]),
+          theme: ThemeData.light().copyWith(
+            dialogBackgroundColor: Colors.white,
+            scaffoldBackgroundColor: Colors.white,
+            bottomNavigationBarTheme:
+                BottomNavigationBarThemeData(backgroundColor: Colors.white),
             colorScheme: ColorScheme.fromSwatch().copyWith(
               primary: Colors.brown[300],
+              surfaceTint: Colors.white,
             ),
           ),
           home: StreamBuilder(

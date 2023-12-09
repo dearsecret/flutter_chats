@@ -36,8 +36,6 @@ class _RealtimeState extends State<Realtime> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<PostProvider>();
-    final data = provider.data;
     return NotificationListener(
       onNotification: (ScrollNotification notification) {
         if (notification is ScrollEndNotification &&
@@ -48,109 +46,123 @@ class _RealtimeState extends State<Realtime> {
         return false;
       },
       child: RefreshIndicator(
-        onRefresh: _refresh,
-        child: ListView.separated(
-          padding: EdgeInsets.zero,
-          separatorBuilder: (context, index) => Divider(),
-          physics: AlwaysScrollableScrollPhysics(),
-          itemCount: data.length + 1,
-          itemBuilder: (context, index) {
-            if (index < data.length) {
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    selectedKey = data[index]["pk"];
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => PostDetail(
-                            pk: data[index]["pk"], title: data[index]["title"]),
-                      ),
-                    );
-                  });
-                },
-                child: ListTile(
-                    leading: Text("${data[index]["pk"]}"),
-                    title: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "${data[index]["title"]}",
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                        ]),
-                    subtitle: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.circle,
-                          color: data[index]["writer"]["gender"]
-                              ? Colors.blueAccent[100]
-                              : Colors.red[200],
-                          size: 11,
-                        ),
-                        SizedBox(
-                          width: 12,
-                        ),
-                        Icon(
-                          Icons.thumb_up_alt_outlined,
-                          size: 14,
-                        ),
-                        Text(
-                          "${data[index]["count_likes"]}",
-                          textAlign: TextAlign.center,
-                        ),
-                        SizedBox(
-                          width: 8,
-                        ),
-                        Text("${data[index]["count_dislikes"]}"),
-                        Icon(
-                          Icons.thumb_down_alt_outlined,
-                          size: 14,
-                        ),
-                        SizedBox(
-                          width: 12,
-                        ),
-                        TimerBuilder.periodic(
-                          Duration(seconds: 3),
-                          builder: (context) => Text(
-                            "${TimeUtil.timeAgo(milliseconds: DateTime.parse(data[index]["created_at"]).millisecondsSinceEpoch)}",
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ],
-                    ),
-                    trailing: data[index]["image"] != null
-                        ? AspectRatio(
-                            aspectRatio: 1 / 1,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(20)),
-                                image: DecorationImage(
-                                  image: ExtendedImage.network(
-                                    data[index]["image"],
-                                    fit: BoxFit.cover,
-                                  ).image,
+          onRefresh: _refresh,
+          child: Selector<PostProvider, List>(
+            selector: (p0, p1) => (p1.data),
+            shouldRebuild: (previous, next) => true,
+            builder: (context, data, child) {
+              return ListView.separated(
+                padding: EdgeInsets.zero,
+                separatorBuilder: (context, index) => Divider(),
+                physics: AlwaysScrollableScrollPhysics(),
+                itemCount: data.length + 1,
+                itemBuilder: (context, index) {
+                  if (index < data.length) {
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          selectedKey = data[index]["pk"];
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => PostDetail(
+                                  pk: data[index]["pk"],
+                                  title: data[index]["title"]),
+                            ),
+                          );
+                        });
+                      },
+                      child: ListTile(
+                          leading: Text("${data[index]["pk"]}"),
+                          title: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "${data[index]["title"]}",
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                              ]),
+                          subtitle: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.circle,
+                                color: data[index]["gender"]
+                                    ? Colors.blueAccent[100]
+                                    : Colors.red[200],
+                                size: 11,
+                              ),
+                              SizedBox(
+                                width: 12,
+                              ),
+                              Icon(
+                                Icons.remove_red_eye_outlined,
+                                size: 14,
+                              ),
+                              Text(
+                                "${data[index]["views"]}",
+                                textAlign: TextAlign.center,
+                              ),
+                              Icon(
+                                Icons.thumb_up_alt_outlined,
+                                size: 14,
+                              ),
+                              Text(
+                                "${data[index]["count_likes"]}",
+                                textAlign: TextAlign.center,
+                              ),
+                              SizedBox(
+                                width: 8,
+                              ),
+                              Text("${data[index]["count_dislikes"]}"),
+                              Icon(
+                                Icons.thumb_down_alt_outlined,
+                                size: 14,
+                              ),
+                              SizedBox(
+                                width: 12,
+                              ),
+                              TimerBuilder.periodic(
+                                Duration(seconds: 3),
+                                builder: (context) => Text(
+                                  "${TimeUtil.timeAgo(milliseconds: DateTime.parse(data[index]["created_at"]).millisecondsSinceEpoch)}",
+                                  textAlign: TextAlign.center,
                                 ),
                               ),
-                            ),
-                          )
-                        : null),
-              );
-            } else {
-              return isMore
-                  ? Center(
-                      child: CircularProgressIndicator(),
-                    )
-                  : Center(
-                      child: Text("데이터가 존재하지 않습니다."),
+                            ],
+                          ),
+                          trailing: data[index]["image"] != null
+                              ? AspectRatio(
+                                  aspectRatio: 1 / 1,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(20)),
+                                      image: DecorationImage(
+                                        image: ExtendedImage.network(
+                                          data[index]["image"],
+                                          fit: BoxFit.cover,
+                                        ).image,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : null),
                     );
-            }
-          },
-        ),
-      ),
+                  } else {
+                    return isLoading
+                        ? Center(
+                            child: CircularProgressIndicator(),
+                          )
+                        : Center(
+                            child: Text("데이터가 존재하지 않습니다."),
+                          );
+                  }
+                },
+              );
+            },
+          )),
     );
   }
 }

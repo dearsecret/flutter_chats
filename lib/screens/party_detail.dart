@@ -1,6 +1,5 @@
-import 'dart:convert';
-
 import 'package:chats/utils/alert.dart';
+import 'package:chats/utils/request.dart';
 import 'package:chats/utils/time.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -9,10 +8,10 @@ import 'package:timer_builder/timer_builder.dart';
 import '../components/mini_profile.dart';
 
 class PartyDetail extends StatefulWidget {
-  late int index, pk;
-  late Widget image;
-  late String title, date;
-  late bool gender;
+  late final int index, pk;
+  late final Widget image;
+  late final String title, date;
+  late final bool gender;
   PartyDetail(
       {super.key,
       required int this.index,
@@ -36,7 +35,6 @@ class _PartyDetailState extends State<PartyDetail>
   @override
   void dispose() {
     _tabController.dispose();
-    // TODO: implement dispose
     super.dispose();
   }
 
@@ -49,19 +47,17 @@ class _PartyDetailState extends State<PartyDetail>
   }
 
   getDetailData() async {
-    final token = await storage.read(key: "token");
-    http.Response response = await http.get(
-        Uri.parse("http://127.0.0.1:8000/api/v1/meetings/${widget.pk}"),
-        headers: {
-          "Authorization": token!,
-          "Content-Type": "Applications/json"
-        });
-    if (response.statusCode == 200) {
-      setState(() {
-        data = jsonDecode(utf8.decode(response.bodyBytes));
-      });
-      print(data);
-    }
+    DefaultRequest.get(path: "/meetings/${widget.pk}")
+        .then((value) => setState(() {
+              data = value;
+            }));
+  }
+
+  requestDescription() async {
+    DefaultRequest.post(path: "/meetings/${widget.pk}")
+        .then((_) => setState(() {
+              data?["joined"] = true;
+            }));
   }
 
   postDescription() async {
@@ -82,18 +78,6 @@ class _PartyDetailState extends State<PartyDetail>
         headers: {"Authorization": token!, "Content-Type": "Application/json"});
     if (response.statusCode == 200) {
       Navigator.of(context).pop();
-    }
-  }
-
-  requestDescription() async {
-    final token = await storage.read(key: "token");
-    http.Response response = await http.post(
-        Uri.parse("http://127.0.0.1:8000/api/v1/meetings/${widget.pk}"),
-        headers: {"Authorization": token!, "Content-Type": "Application/json"});
-    if (response.statusCode == 200) {
-      setState(() {
-        data?["joined"] = true;
-      });
     }
   }
 
@@ -149,17 +133,6 @@ class _PartyDetailState extends State<PartyDetail>
         );
       },
     );
-  }
-
-  _confirmShowProfile({required String created}) async {
-    final token = await storage.read(key: "token");
-    http.Response response = await http.post(
-        Uri.parse("http://127.0.0.1:8000/api/v1/meetings/${widget.pk}"),
-        headers: {"Authorization": token!, "Content-Type": "Application/json"},
-        body: jsonEncode({"created": created}));
-    if (response.statusCode == 200) {
-      print("yo");
-    }
   }
 
   @override

@@ -9,7 +9,7 @@ class Shop extends StatelessWidget {
       customBorder: CircleBorder(),
       child: Container(
         margin: EdgeInsets.all(3),
-        child: Icon(Icons.shopping_cart_sharp),
+        child: Icon(Icons.shopping_cart_outlined),
       ),
       onTap: () {},
     );

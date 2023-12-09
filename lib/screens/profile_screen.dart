@@ -1,15 +1,14 @@
-import 'dart:convert';
-
 import 'package:chats/components/logout_button.dart';
-import 'package:chats/providers/user_profile_provider.dart';
 import 'package:chats/screens/profile_detail_screen.dart';
-import 'package:chats/screens/profile_preview.dart';
-import 'package:chats/utils/alert.dart';
-import 'package:extended_image/extended_image.dart';
+import 'package:chats/screens/profile_preview_screen.dart';
+import 'package:chats/screens/service_detail_screen.dart';
+import 'package:chats/screens/upload_screen.dart';
+import 'package:chats/utils/image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../components/profile_menu.dart';
-import 'package:http/http.dart' as http;
+import '../providers/user_provider.dart';
+import '../utils/contacts.dart';
 
 class Profile extends StatefulWidget {
   Profile({super.key});
@@ -19,37 +18,15 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
   Map data = {};
-  getProfile() async {
-    final token = await storage.read(key: "token");
-    http.Response response = await http.get(
-      Uri.parse("http://127.0.0.1:8000/api/v1/users/me"),
-      headers: {"Authorization": token!, "Content-Type": "Application/json"},
-    );
-    if (response.statusCode == 200) {
-      setState(() {
-        data = jsonDecode(utf8.decode(response.bodyBytes));
-      });
-    }
-  }
-
-  @override
-  void initState() {
-    getProfile();
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
-    var thumbnail = context
-        .select<UserProfileProvider, dynamic>((provider) => provider.thumbnail);
-
+    var provider = context.watch<UserProvider>();
     return SafeArea(
       child: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
         return RefreshIndicator(
-          onRefresh: () async {
-            context.read<UserProfileProvider>().getImages();
-          },
+          onRefresh: () async {},
           child: SingleChildScrollView(
             physics: AlwaysScrollableScrollPhysics(),
             child: ConstrainedBox(
@@ -62,41 +39,16 @@ class _ProfileState extends State<Profile> {
                   SizedBox(height: 12),
                   Stack(
                     children: [
-                      if (thumbnail == null)
-                        FutureBuilder(
-                          future:
-                              context.read<UserProfileProvider>().getImages(),
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData &&
-                                snapshot.connectionState !=
-                                    ConnectionState.waiting) {
-                              return CircleAvatar(
-                                radius: MediaQuery.of(context).size.width / 7,
-                                backgroundImage: ExtendedImage.network(
-                                  snapshot.data,
-                                  color: null,
-                                  cache: true,
-                                ).image,
-                                backgroundColor: Colors.brown[100],
-                              );
-                            } else {
-                              return CircleAvatar(
-                                radius: MediaQuery.of(context).size.width / 7,
-                                backgroundColor: Colors.grey[200],
-                              );
-                            }
-                          },
-                        ),
-                      if (thumbnail != null)
-                        CircleAvatar(
+                      Hero(
+                        tag: "",
+                        child: CircleAvatar(
                           radius: MediaQuery.of(context).size.width / 7,
-                          backgroundImage: ExtendedImage.network(
-                            thumbnail,
-                            cache: true,
-                            color: null,
-                          ).image,
-                          backgroundColor: Colors.brown[100],
+                          backgroundColor: Colors.grey[200],
+                          backgroundImage: provider.thumbnail == null
+                              ? null
+                              : CustomImage.createProvider(provider.thumbnail),
                         ),
+                      ),
                       Positioned(
                         right: 0,
                         bottom: 0,
@@ -107,8 +59,12 @@ class _ProfileState extends State<Profile> {
                                   const BorderRadius.all(Radius.circular(25))),
                           child: IconButton(
                             onPressed: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => ProfilePreview()));
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      ServiceDetail(user: provider.user),
+                                ),
+                              );
                             },
                             icon: const Icon(
                               Icons.search,
@@ -120,30 +76,24 @@ class _ProfileState extends State<Profile> {
                     ],
                   ),
                   const SizedBox(height: 30),
-                  Text("${data["name"]}"),
+                  Text("${provider.user.name ?? ''}"),
                   Container(
                     child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.black,
-                      ),
+                      child: Text("포인트 ${provider.point ?? 0}"),
                       onPressed: () {},
-                      child: Text("포인트 ${data["point"]}"),
                     ),
                   ),
-                  // Text("${context.read<UserProvider>().name}"),
                   Column(
                     children: [
                       TextButton(
-                        onPressed: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => ProfileDetail(),
-                          ));
-                        },
-                        child: MenuItem(
-                            title: "프로필",
-                            iconData: Icons.contact_page_outlined),
-                      ),
+                          onPressed: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => Preview(),
+                            ));
+                          },
+                          child: MenuItem(
+                              title: "프로필 관리",
+                              iconData: Icons.contact_page_outlined)),
                       TextButton(
                           onPressed: () {},
                           child: MenuItem(
@@ -153,6 +103,16 @@ class _ProfileState extends State<Profile> {
                           child: MenuItem(
                               title: "문의하기",
                               iconData: Icons.phone_in_talk_outlined)),
+                      TextButton(
+                          onPressed: () {
+                            getContacts(context);
+                            // final values = await getContacts(context);
+
+                            setState(() {});
+                          },
+                          child: MenuItem(
+                              title: "연락처 차단",
+                              iconData: Icons.add_reaction_outlined)),
                       TextButton(
                           onPressed: () {},
                           child: MenuItem(

@@ -1,10 +1,10 @@
-import 'package:extended_image/extended_image.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:io';
+import 'package:chats/utils/request.dart';
 import 'package:flutter/material.dart';
+import 'package:extended_image/extended_image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import '../providers/user_profile_provider.dart';
+import '../providers/user_provider.dart';
 
 class UploadImage extends StatefulWidget {
   const UploadImage({super.key});
@@ -14,24 +14,26 @@ class UploadImage extends StatefulWidget {
 }
 
 class _UploadImageState extends State<UploadImage> {
-  late List<dynamic> imageList;
-  final userId = FirebaseAuth.instance.currentUser!.uid;
-  final storageRef = FirebaseStorage.instance.ref();
-  bool isChanged = false;
-  bool isLoading = false;
-  Set deleteSet = {};
-  int index = 0;
+  List imageList = [];
+  bool _isChanged = false;
+  bool _isLoading = false;
+  Set _deleteSet = {};
+  int _index = 0;
 
   @override
   void initState() {
-    imageList = context.read<UserProfileProvider>().images;
-    if (imageList.isNotEmpty) {
-      print("downloaded Provider's data");
-    }
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      await context.read<UserProvider>().setUploadImage().then((value) {
+        setState(() {
+          imageList = value;
+        });
+      });
+    });
   }
 
-  pickImage(int index) async {
+  _pickImage(int index) async {
+    if (context.read<UserProvider>().is_pending) return;
     final imagePicker = ImagePicker();
     final pickedImage =
         await imagePicker.pickImage(source: ImageSource.gallery);
@@ -39,29 +41,7 @@ class _UploadImageState extends State<UploadImage> {
       setState(() {
         imageList[index] = File(pickedImage.path);
       });
-      isChanged = true;
-    }
-  }
-
-  Future putImages() async {
-    print("uploading images");
-    setState(() {
-      isLoading = true;
-    });
-    await Future.wait(imageList.indexed.map((e) async => uploadTask(e)));
-    isLoading = false;
-  }
-
-  Future uploadTask(element) async {
-    var (i, data) = element;
-    print("$i/${imageList.length}");
-    final userProfileRef = storageRef.child("users/$userId/$i.jpg");
-    if (data is File) {
-      await userProfileRef.putFile(data);
-      print("$i uploded success");
-    } else if (deleteSet.contains(i)) {
-      await userProfileRef.delete();
-      print("$i delete");
+      _isChanged = true;
     }
   }
 
@@ -72,31 +52,34 @@ class _UploadImageState extends State<UploadImage> {
         fit: BoxFit.cover,
       );
     } else {
-      return ExtendedImage.network(
-        e,
-        fit: BoxFit.cover,
-        cache: true,
+      return Container(
+        decoration: BoxDecoration(
+            image: DecorationImage(
+                colorFilter: !context.watch<UserProvider>().is_pending
+                    ? null
+                    : ColorFilter.mode(
+                        Colors.black.withOpacity(0.3), BlendMode.srcOver),
+                image: ExtendedImage.network(
+                  e,
+                  fit: BoxFit.cover,
+                  cache: true,
+                  imageCacheName: "$e",
+                  cacheMaxAge: Duration(days: 7),
+                ).image,
+                fit: BoxFit.cover)),
       );
     }
   }
 
-  // TODO: make Validation
-  // bool tryValidation() {
-  //   if (imageList[0] ==null) {
-  //     return false;
-  //   } else if (imageList.where((element) => element != null).length < 3){
-  //     return false;
-  //   }
-  //   return true;
-  // }
-
   @override
   Widget build(BuildContext context) {
+    var provider = context.watch<UserProvider>();
+
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(
           onPressed: () {
-            isChanged
+            _isChanged
                 ? showDialog(
                     barrierDismissible: true,
                     context: context,
@@ -129,152 +112,171 @@ class _UploadImageState extends State<UploadImage> {
         ),
       ),
       body: SafeArea(
-        child: Container(
-          padding: EdgeInsets.all(10),
-          child: Column(
-            children: [
-              SizedBox(
-                height: 12,
-              ),
-              Align(
-                alignment: Alignment.topLeft,
-                child: Text(
-                  "  프로필 사진 변경",
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 22,
-                      color: Colors.black),
-                ),
-              ),
-              SizedBox(
-                height: 12,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  ...imageList
-                      .asMap()
-                      .map((i, e) => MapEntry(
-                          i,
-                          Container(
-                            child: Expanded(
+        child: (imageList.isEmpty)
+            // child: (imageList.isEmpty ?? true)
+            ? Center(child: CircularProgressIndicator())
+            : Container(
+                padding: EdgeInsets.all(10),
+                child: Column(
+                  children: [
+                    SizedBox(
+                      height: 12,
+                    ),
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: Text(
+                        "  프로필 사진 변경",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 22,
+                            color: Colors.black),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 12,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        ...imageList
+                            .asMap()
+                            .map((i, e) => MapEntry(
+                                i,
+                                Container(
+                                  child: Expanded(
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          _index = i;
+                                        });
+                                      },
+                                      child: Container(
+                                        clipBehavior: Clip.hardEdge,
+                                        margin: EdgeInsets.all(5),
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                              width: _index == i ? 3 : 1,
+                                              color: _index == i
+                                                  ? Colors.teal
+                                                  : Colors.black),
+                                          borderRadius: BorderRadius.all(
+                                            Radius.circular(10),
+                                          ),
+                                        ),
+                                        child: AspectRatio(
+                                            aspectRatio: 1 / 1,
+                                            child: e == null
+                                                ? Icon(Icons.add)
+                                                : showImage(e)),
+                                      ),
+                                    ),
+                                  ),
+                                )))
+                            .values
+                            .toList()
+                      ],
+                    ),
+                    SizedBox(
+                      height: 24,
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: IndexedStack(
+                        index: _index,
+                        children: <Widget>[
+                          for (var i in imageList)
+                            AspectRatio(
+                              aspectRatio: 1 / 1,
                               child: GestureDetector(
                                 onTap: () {
-                                  setState(() {
-                                    index = i;
-                                  });
+                                  _pickImage(_index);
                                 },
                                 child: Container(
-                                  clipBehavior: Clip.hardEdge,
-                                  margin: EdgeInsets.all(5),
+                                  clipBehavior: Clip.antiAlias,
+                                  margin: EdgeInsets.all(10),
                                   decoration: BoxDecoration(
                                     border: Border.all(
-                                        width: index == i ? 3 : 1,
-                                        color: index == i
-                                            ? Colors.teal
-                                            : Colors.black),
+                                      width: i == null ? 1 : 0,
+                                    ),
                                     borderRadius: BorderRadius.all(
                                       Radius.circular(10),
                                     ),
                                   ),
-                                  child: AspectRatio(
-                                      aspectRatio: 1 / 1,
-                                      child: e == null
-                                          ? Icon(Icons.add)
-                                          : showImage(e)),
+                                  child: i == null
+                                      ? Icon(Icons.add)
+                                      : Stack(
+                                          children: [
+                                            Positioned(
+                                                right: 0,
+                                                bottom: 0,
+                                                left: 0,
+                                                top: 0,
+                                                child: showImage(i)),
+                                            if (!provider.is_pending)
+                                              Positioned(
+                                                right: 2,
+                                                top: 2,
+                                                child: IconButton(
+                                                  icon: Icon(
+                                                    Icons.close,
+                                                    color: Colors.white,
+                                                  ),
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      imageList[_index] = null;
+                                                    });
+                                                    _deleteSet.add(_index);
+                                                    _isChanged = true;
+                                                  },
+                                                ),
+                                              )
+                                            else
+                                              Center(
+                                                child: Text(
+                                                  "회원님의 사진을 심사 중 입니다.",
+                                                  style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 18),
+                                                ),
+                                              ),
+                                          ],
+                                        ),
                                 ),
                               ),
-                            ),
-                          )))
-                      .values
-                      .toList()
-                ],
-              ),
-              SizedBox(
-                height: 24,
-              ),
-              Expanded(
-                flex: 2,
-                child: IndexedStack(
-                  index: index,
-                  children: <Widget>[
-                    for (var i in imageList)
-                      AspectRatio(
-                        aspectRatio: 1 / 1,
-                        child: GestureDetector(
-                          onTap: () {
-                            pickImage(index);
-                          },
-                          child: Container(
-                            clipBehavior: Clip.antiAlias,
-                            margin: EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                width: i == null ? 1 : 0,
+                            )
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: EdgeInsets.all(10),
+                      child: SizedBox(
+                        width: double.maxFinite,
+                        child: _isLoading
+                            ? Center(child: CircularProgressIndicator())
+                            : ElevatedButton(
+                                child: Text(
+                                  "저장",
+                                  style: TextStyle(fontSize: 18),
+                                ),
+                                onPressed: provider.is_pending
+                                    ? null
+                                    : () {
+                                        setState(() {
+                                          _isLoading = true;
+                                        });
+                                        DefaultRequest.uploadImages(imageList)
+                                            .then((e) =>
+                                                provider.upadatePendingImage =
+                                                    e["pending"])
+                                            .then((_) =>
+                                                Navigator.of(context).pop());
+                                      },
                               ),
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(10),
-                              ),
-                            ),
-                            child: i == null
-                                ? Icon(Icons.add)
-                                : Stack(
-                                    children: [
-                                      Positioned(
-                                          right: 0,
-                                          bottom: 0,
-                                          left: 0,
-                                          top: 0,
-                                          child: showImage(i)),
-                                      Positioned(
-                                        right: 2,
-                                        top: 2,
-                                        child: IconButton(
-                                          icon: Icon(
-                                            Icons.close,
-                                            color: Colors.white,
-                                          ),
-                                          onPressed: () {
-                                            setState(() {
-                                              imageList[index] = null;
-                                            });
-                                            deleteSet.add(index);
-                                            isChanged = true;
-                                          },
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                          ),
-                        ),
-                      )
+                      ),
+                    ),
                   ],
                 ),
               ),
-              Container(
-                padding: EdgeInsets.all(10),
-                child: SizedBox(
-                  width: double.maxFinite,
-                  child: isLoading
-                      ? Center(child: CircularProgressIndicator())
-                      : ElevatedButton(
-                          child: Text(
-                            "저장",
-                            style: TextStyle(fontSize: 18),
-                          ),
-                          onPressed: () {
-                            // TODO : save listImage to FIREBASE STORAGE
-                            isLoading
-                                ? null
-                                : putImages().then(
-                                    (value) => Navigator.of(context).pop());
-                          },
-                        ),
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

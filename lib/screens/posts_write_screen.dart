@@ -1,12 +1,10 @@
-import 'dart:convert';
 import 'dart:io';
 
+import 'package:chats/utils/request.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:image_picker/image_picker.dart';
-import '../apis/user_repository.dart';
-import 'package:http/http.dart' as http;
 
 class PostWrite extends StatefulWidget {
   const PostWrite({super.key});
@@ -16,7 +14,6 @@ class PostWrite extends StatefulWidget {
 }
 
 class _PostWriteState extends State<PostWrite> {
-  var repository = UserRepository();
   var _formKey = GlobalKey<FormState>();
   String title = "";
   String content = "";
@@ -39,14 +36,7 @@ class _PostWriteState extends State<PostWrite> {
       data["image"] = await ref.getDownloadURL();
       print(data["image"]);
     }
-    var token = await storage.read(key: "token");
-    String url = "http://127.0.0.1:8000/api/v1/chats/post";
-    await http.post(Uri.parse(url),
-        headers: {
-          "Authorization": "$token",
-          "Content-Type": "Application/json"
-        },
-        body: jsonEncode(data));
+    DefaultRequest.post(path: "/chats/post", data: data);
   }
 
   File? file;

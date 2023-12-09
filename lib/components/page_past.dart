@@ -1,4 +1,4 @@
-import 'package:chats/components/widget_choice.dart';
+import 'package:chats/components/widget_choice_history.dart';
 import 'package:chats/providers/daily_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -23,7 +23,6 @@ class _PastState extends State<Past> {
 
   @override
   Widget build(BuildContext context) {
-    final data = context.watch<DailyProvider>().getHistory;
     return RefreshIndicator(
       onRefresh: _refresh,
       child: NotificationListener(
@@ -40,14 +39,14 @@ class _PastState extends State<Past> {
             Expanded(
               child: GridView.builder(
                 padding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
-                itemCount: data.length,
+                itemCount: context.watch<DailyProvider>().getHistoryLength,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3,
                     childAspectRatio: 1 / 1.618,
                     crossAxisSpacing: 15,
                     mainAxisSpacing: 25),
                 itemBuilder: (context, index) {
-                  return Choice(
+                  return ChoiceHistory(
                     key: ValueKey(index),
                     index: index,
                   );

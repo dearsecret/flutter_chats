@@ -7,9 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-// provider => analysis_options.yaml needs to delete "include"
-// flutter_secure_storage needs to settings 안드로이드
-
 class MyProfile extends StatefulWidget {
   const MyProfile({super.key});
   @override
@@ -24,8 +21,6 @@ class _MyProfileState extends State<MyProfile> {
     storage.delete(key: "token");
     clearDiskCachedImages();
     clearMemoryImageCache();
-
-    // Navigator.pushNamed(context, '/');
     DefaultCacheManager().emptyCache();
   }
 
@@ -52,7 +47,6 @@ class _MyProfileState extends State<MyProfile> {
   List<Widget> _widgetOptions = <Widget>[
     Service(),
     Party(),
-    // Chat(),
     Post(),
     Profile(),
   ];
@@ -63,43 +57,6 @@ class _MyProfileState extends State<MyProfile> {
       print(_selectedIndex);
     });
   }
-
-  // Widget? switchFloatingButton(_selectedIndex) {
-  //   Widget newButton = Container();
-  //   switch (_selectedIndex) {
-  //     case 0:
-  //       break;
-  //     case 1:
-  //       newButton = Align(
-  //         child: FloatingActionButton(
-  //           onPressed: () {
-  //             Navigator.of(context)
-  //                 .push(MaterialPageRoute(builder: (context) => PostWrite()));
-  //           },
-  //           child: Icon(Icons.border_color),
-  //           backgroundColor: Colors.black,
-  //         ),
-  //         alignment: Alignment(0.95, 0.95),
-  //       );
-  //       break;
-  //     case 2:
-  //       newButton = Align(
-  //         child: FloatingActionButton(
-  //           onPressed: () {
-  //             Navigator.of(context)
-  //                 .push(MaterialPageRoute(builder: (context) => PostWrite()));
-  //           },
-  //           child: Icon(Icons.border_color),
-  //           backgroundColor: Colors.black,
-  //         ),
-  //         alignment: Alignment(0.95, 0.95),
-  //       );
-  //       break;
-  //     case 3:
-  //       break;
-  //   }
-  //   return newButton;
-  // }
 
   @override
   Widget build(BuildContext context) {

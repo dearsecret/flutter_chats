@@ -68,6 +68,10 @@ class _ChoiceState extends State<Choice> {
           : () {
               if (provider.getData(widget.index) == null) {
                 context.read<DailyProvider>().setCard = widget.index;
+                print("work");
+                // setState(() {
+                //   _angle = pi;
+                // });
                 setState(() {
                   _angle = (_angle + pi) % (2 * pi);
                 });
@@ -98,59 +102,57 @@ class _ChoiceState extends State<Choice> {
         duration: Duration(milliseconds: 700),
         curve: Curves.easeOutBack,
         builder: (context, value, child) {
-          bool _isBack = (value >= pi / 2) ||
-                  context.watch<DailyProvider>().getData(widget.index) != null
-              ? false
-              : true;
+          // decide when show front and back
+          bool _isBack = (value < pi / 2);
           return Transform(
-            transform: Matrix4.identity()
-              ..setEntry(3, 2, 0.001)
-              ..rotateY(value),
-            alignment: Alignment.center,
-            child: _isBack
-                ? Container(
-                    child: _pending
-                        ? Center(
-                            child: Text(
-                            "Today's Profile",
-                            style: TextStyle(
-                              color: Colors.brown[400],
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ))
-                        : Center(
-                            child: Text("Stand by Profile",
-                                style: TextStyle(color: Colors.grey))),
-                    decoration: BoxDecoration(
-                        color: Colors.black,
-                        boxShadow: [BoxShadow(blurRadius: 5)],
-                        borderRadius: BorderRadius.circular(20)),
-                  )
-                : Transform(
-                    alignment: Alignment.center,
-                    transform: Matrix4.rotationY(pi),
-                    child: Container(
+              transform: Matrix4.identity()
+                ..setEntry(3, 2, 0.001)
+                ..rotateY(value),
+              alignment: Alignment.center,
+              child: _isBack
+                  ? Container(
+                      child: _pending
+                          ? Center(
+                              child: Text(
+                              "Today's Profile",
+                              style: TextStyle(
+                                color: Colors.brown[400],
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ))
+                          : Center(
+                              child: Text("Stand by Profile",
+                                  style: TextStyle(color: Colors.grey))),
                       decoration: BoxDecoration(
-                          image: context
-                                      .read<DailyProvider>()
-                                      .getData(widget.index) ==
-                                  null
-                              ? null
-                              : DecorationImage(
-                                  image: ExtendedImage.network(
-                                    context
-                                            .watch<DailyProvider>()
-                                            .getData(widget.index)["selected"]
-                                        ["thumbnail"],
-                                    cache: true,
-                                  ).image,
-                                  fit: BoxFit.cover),
-                          color: Colors.white,
+                          color: Colors.black,
                           boxShadow: [BoxShadow(blurRadius: 5)],
                           borderRadius: BorderRadius.circular(20)),
-                    ),
-                  ),
-          );
+                    )
+                  : Transform(
+                      alignment: Alignment.center,
+                      transform: Matrix4.rotationY(pi),
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: context
+                                        .read<DailyProvider>()
+                                        .getData(widget.index) ==
+                                    null
+                                ? null
+                                : DecorationImage(
+                                    image: ExtendedImage.network(
+                                      context
+                                          .watch<DailyProvider>()
+                                          .getData(widget.index)
+                                          .selected
+                                          .thumbnail,
+                                      cache: true,
+                                    ).image,
+                                    fit: BoxFit.cover),
+                            color: Colors.white,
+                            boxShadow: [BoxShadow(blurRadius: 5)],
+                            borderRadius: BorderRadius.circular(20)),
+                      ),
+                    ));
         },
       ),
     );
