@@ -272,9 +272,21 @@ class _PostDetailState extends State<PostDetail> {
                                                             crossAxisCount: 3),
                                                     itemBuilder:
                                                         (context, index) {
-                                                      return CustomCard(
-                                                          data: cards[index]
-                                                              .cast());
+                                                      return GestureDetector(
+                                                        onTap: () {
+                                                          if (cards[index]
+                                                              .isEmpty)
+                                                            ScaffoldMessenger
+                                                                    .of(context)
+                                                                .showSnackBar(
+                                                                    SnackBar(
+                                                                        content:
+                                                                            Text("상대방의 수락이 필요합니다.")));
+                                                        },
+                                                        child: CustomCard(
+                                                            data: cards[index]
+                                                                .cast()),
+                                                      );
                                                     },
                                                   );
                                                 else
@@ -355,6 +367,39 @@ class _CommentState extends State<Comment> {
     return await DefaultRequest.delete(path: "/chats/chat/$pk/comment");
   }
 
+  _showDialog(Map data) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("프로필 교환을 요청하시겠습니까?"),
+          content: Text("프로필 교환을 요청하면 5포인트가 차감됩니다."),
+          actions: [
+            ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text("취소")),
+            ElevatedButton(
+                onPressed: () async {
+                  await DefaultRequest.get(
+                          path: "/services/comment/${data["pk"]}")
+                      .then((value) {
+                    print(value);
+                    if (!(value as Map).containsKey("error"))
+                      context.read<PostProvider>().addExchange = value;
+
+                    Navigator.of(context).pop();
+                  });
+                  Navigator.of(context).pop();
+                },
+                child: Text("확인"))
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // var comment = context.select<PostProvider, List>((p) => p.getComment);
@@ -371,19 +416,19 @@ class _CommentState extends State<Comment> {
               leading: comment[index]["parent"] != null
                   ? Icon(Icons.keyboard_arrow_right)
                   : Text("${comment[index]["pk"]}"),
-              title: comment[index]["is_delete"]
-                  ? Text(
+              title: !comment[index]["is_delete"]
+                  ? Text("${comment[index]["content"]}")
+                  : Text(
                       "삭제된 댓글입니다.",
                       style: TextStyle(color: Colors.grey),
-                    )
-                  : Text("${comment[index]["content"]}"),
+                    ),
               trailing: comment[index]["author"]["is_owner"]
                   ? (comment[index]["is_delete"]
                       ? null
                       : IconButton(
-                          onPressed: () {
-                            deleteComment(comment[index]["pk"]).then((value) {
-                              print(value);
+                          onPressed: () async {
+                            await deleteComment(comment[index]["pk"])
+                                .then((value) {
                               setState(() {
                                 comment[index] = value;
                               });
@@ -393,7 +438,10 @@ class _CommentState extends State<Comment> {
                             Icons.close,
                           )))
                   : IconButton(
-                      onPressed: () {}, icon: Icon(Icons.favorite_border)),
+                      onPressed: () {
+                        _showDialog(comment[index]);
+                      },
+                      icon: Icon(Icons.favorite_border)),
               subtitle: Row(
                 children: [
                   Text(

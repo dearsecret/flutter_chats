@@ -61,6 +61,12 @@ class PostProvider extends ChangeNotifier {
   get getDetail => _detail;
   get getComment => _comment;
   List? get getExchange => _exchange;
+  set addExchange(Map data) {
+    print(data);
+    _exchange!.add(data);
+    notifyListeners();
+  }
+
   Future getDetialPage(int pk) async {
     if (_detail?.pk == pk) return _detail;
     // await Future.delayed(Duration(seconds: 1));

@@ -19,7 +19,9 @@ class _CustomCardState extends State<CustomCard> {
     WidgetsBinding.instance.addPostFrameCallback(
       (timeStamp) {
         setState(() {
-          if (widget.data.isNotEmpty) _angle = pi;
+          if (widget.data.isNotEmpty) {
+            _angle = pi;
+          }
         });
       },
     );
@@ -55,6 +57,7 @@ class _CustomCardState extends State<CustomCard> {
                         borderRadius: BorderRadius.circular(20)),
                   )
                 : GestureDetector(
+                    // TODO : move to detail page
                     onTap: () {},
                     child: Transform(
                       alignment: Alignment.center,
@@ -63,8 +66,7 @@ class _CustomCardState extends State<CustomCard> {
                         decoration: BoxDecoration(
                             image: DecorationImage(
                                 image: ExtendedImage.network(
-                                  // TODO data parsing
-                                  "data![]",
+                                  widget.data["user"]["thumbnail"],
                                   cache: true,
                                 ).image,
                                 fit: BoxFit.cover),

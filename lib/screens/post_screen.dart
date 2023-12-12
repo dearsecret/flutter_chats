@@ -40,7 +40,7 @@ class _PostState extends State<Post> with TickerProviderStateMixin {
               title: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  " 톡톡",
+                  " 만남의 광장",
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),

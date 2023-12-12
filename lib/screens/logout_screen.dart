@@ -100,7 +100,7 @@ class _LogOutState extends State<LogOut> {
                   Container(
                     padding: const EdgeInsets.only(top: 10),
                     child: Text(
-                      "금지팡이",
+                      "글피",
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Colors.brown[300],
@@ -252,7 +252,6 @@ class _LogOutState extends State<LogOut> {
                                     });
                                   },
                                   obscureText: true,
-                                  focusNode: FocusNode(),
                                   decoration: const InputDecoration(
                                     hintText: "비밀번호",
                                     fillColor: Colors.white,
