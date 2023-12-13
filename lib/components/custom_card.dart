@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:chats/providers/user_provider.dart';
+import 'package:chats/screens/service_detail_screen.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 
@@ -13,8 +15,12 @@ class CustomCard extends StatefulWidget {
 
 class _CustomCardState extends State<CustomCard> {
   double _angle = 0;
+  UserModel? user;
+
   @override
   void initState() {
+    if (widget.data['user'].isNotEmpty)
+      user = UserModel.fromJson(widget.data['user']);
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback(
       (timeStamp) {
@@ -57,22 +63,31 @@ class _CustomCardState extends State<CustomCard> {
                         borderRadius: BorderRadius.circular(20)),
                   )
                 : GestureDetector(
-                    // TODO : move to detail page
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => ServiceDetail(
+                          user: user!,
+                          data: widget.data,
+                        ),
+                      ));
+                    },
                     child: Transform(
                       alignment: Alignment.center,
                       transform: Matrix4.rotationY(pi),
-                      child: Container(
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: ExtendedImage.network(
-                                  widget.data["user"]["thumbnail"],
-                                  cache: true,
-                                ).image,
-                                fit: BoxFit.cover),
-                            color: Colors.white,
-                            boxShadow: [BoxShadow(blurRadius: 5)],
-                            borderRadius: BorderRadius.circular(20)),
+                      child: Hero(
+                        tag: widget.data["pk"] ?? "",
+                        child: Container(
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: ExtendedImage.network(
+                                    widget.data["user"]["thumbnail"],
+                                    cache: true,
+                                  ).image,
+                                  fit: BoxFit.cover),
+                              color: Colors.white,
+                              boxShadow: [BoxShadow(blurRadius: 5)],
+                              borderRadius: BorderRadius.circular(20)),
+                        ),
                       ),
                     ),
                   ));

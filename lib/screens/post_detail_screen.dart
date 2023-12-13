@@ -388,8 +388,6 @@ class _CommentState extends State<Comment> {
                     print(value);
                     if (!(value as Map).containsKey("error"))
                       context.read<PostProvider>().addExchange = value;
-
-                    Navigator.of(context).pop();
                   });
                   Navigator.of(context).pop();
                 },
