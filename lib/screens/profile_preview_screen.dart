@@ -17,16 +17,8 @@ class _PreviewState extends State<Preview> {
   Map<String, dynamic>? _options;
   @override
   void initState() {
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      context.read<UserProvider>().user.detail ??= await DefaultRequest.post(
-        path: "/users/info",
-        // data: {"updated_at": widget.updated_at}
-      ).then((value) {
-        return UserDetailModel.fromJson(value);
-      });
-    });
     super.initState();
-    _options = context.read<UserProvider>().options;
+    // _options = context.read<UserProvider>().options;
   }
 
   Future _getOptions() async {
@@ -35,6 +27,16 @@ class _PreviewState extends State<Preview> {
     context.read<UserProvider>().setOptions = _options;
     print("set options' provider");
     return _options;
+  }
+
+  getDetail() async {
+    return context.read<UserProvider>().user.detail ??=
+        await DefaultRequest.post(
+      path: "/users/info",
+      // data: {"updated_at": widget.updated_at}
+    ).then((value) {
+      return UserDetailModel.fromJson(value);
+    });
   }
 
   @override
@@ -50,57 +52,67 @@ class _PreviewState extends State<Preview> {
             SliverPadding(
               padding: EdgeInsets.all(20),
               sliver: SliverToBoxAdapter(
-                child: Column(
-                  children: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => ProfileDetail(),
-                        ));
-                      },
-                      child: MenuItem(
-                          title: "프로필 정보 변경",
-                          iconData: Icons.contact_page_outlined),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => UploadImage(),
-                        ));
-                      },
-                      child: MenuItem(
-                          title: "프로필 사진 변경",
-                          iconData: Icons.contact_page_outlined),
-                    ),
-                    FutureBuilder(
-                        future: _getOptions(),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting)
-                            return CircularProgressIndicator();
-                          if (snapshot.hasData) {
-                            return GridView(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: 15, horizontal: 20),
-                                physics: NeverScrollableScrollPhysics(),
-                                shrinkWrap: true,
-                                gridDelegate:
-                                    SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 2,
-                                        crossAxisSpacing: 10,
-                                        mainAxisSpacing: 10,
-                                        childAspectRatio: 5 / 1),
-                                children: snapshot.data.entries
-                                    .map<Widget>((e) => SelectedButton(
-                                          title: e.key,
-                                          list: e.value,
-                                        ))
-                                    .toList());
-                          } else {
-                            return Text("sad");
-                          }
-                        })
-                  ],
+                child: FutureBuilder(
+                  future: getDetail(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData)
+                      return CircularProgressIndicator();
+                    else
+                      return Column(
+                        children: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => ProfileDetail(),
+                              ));
+                            },
+                            child: MenuItem(
+                                title: "프로필 정보 변경",
+                                iconData: Icons.contact_page_outlined),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => UploadImage(),
+                              ));
+                            },
+                            child: MenuItem(
+                                title: "프로필 사진 변경",
+                                iconData: Icons.contact_page_outlined),
+                          ),
+                          // FutureBuilder(
+                          //     future: Future.delayed(
+                          //         Duration(microseconds: 200),
+                          //         () => _getOptions()),
+                          //     builder: (context, snapshot) {
+                          //       if (snapshot.connectionState ==
+                          //           ConnectionState.waiting)
+                          //         return CircularProgressIndicator();
+                          //       if (snapshot.hasData) {
+                          //         return GridView(
+                          //             padding: EdgeInsets.symmetric(
+                          //                 vertical: 15, horizontal: 20),
+                          //             physics: NeverScrollableScrollPhysics(),
+                          //             shrinkWrap: true,
+                          //             gridDelegate:
+                          //                 SliverGridDelegateWithFixedCrossAxisCount(
+                          //                     crossAxisCount: 2,
+                          //                     crossAxisSpacing: 10,
+                          //                     mainAxisSpacing: 10,
+                          //                     childAspectRatio: 5 / 1),
+                          //             children: snapshot.data.entries
+                          //                 .map<Widget>((e) => SelectedButton(
+                          //                       title: e.key,
+                          //                       list: e.value,
+                          //                     ))
+                          //                 .toList());
+                          //       } else {
+                          //         return Text("sad");
+                          //       }
+                          //     })
+                        ],
+                      );
+                  },
                 ),
               ),
             )

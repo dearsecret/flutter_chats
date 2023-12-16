@@ -18,7 +18,7 @@ class _RealtimeState extends State<Realtime> {
   bool isLoading = false;
 
   _scrollListener() {
-    if (isLoading || !isMore) return;
+    if (isLoading) return;
     isLoading = true;
     context.read<PostProvider>().getMore();
     isLoading = false;
@@ -151,13 +151,9 @@ class _RealtimeState extends State<Realtime> {
                               : null),
                     );
                   } else {
-                    return isLoading
-                        ? Center(
-                            child: CircularProgressIndicator(),
-                          )
-                        : Center(
-                            child: Text("데이터가 존재하지 않습니다."),
-                          );
+                    return Center(
+                      child: CircularProgressIndicator(),
+                    );
                   }
                 },
               );

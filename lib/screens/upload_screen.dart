@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:chats/utils/request.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:image_picker/image_picker.dart';
@@ -15,21 +16,21 @@ class UploadImage extends StatefulWidget {
 
 class _UploadImageState extends State<UploadImage> {
   List imageList = [];
+  List? preList;
   bool _isChanged = false;
   bool _isLoading = false;
   Set _deleteSet = {};
   int _index = 0;
 
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      await context.read<UserProvider>().setUploadImage().then((value) {
-        setState(() {
-          imageList = value;
-        });
+  getPictures() async {
+    await context.read<UserProvider>().setUploadImage().then((value) {
+      setState(() {
+        imageList = value.toList();
       });
+      preList = value;
     });
+
+    return imageList;
   }
 
   _pickImage(int index) async {
@@ -79,7 +80,7 @@ class _UploadImageState extends State<UploadImage> {
       appBar: AppBar(
         leading: BackButton(
           onPressed: () {
-            _isChanged
+            !listEquals(imageList, preList)
                 ? showDialog(
                     barrierDismissible: true,
                     context: context,
@@ -111,172 +112,187 @@ class _UploadImageState extends State<UploadImage> {
           },
         ),
       ),
-      body: SafeArea(
-        child: (imageList.isEmpty)
-            // child: (imageList.isEmpty ?? true)
-            ? Center(child: CircularProgressIndicator())
-            : Container(
-                padding: EdgeInsets.all(10),
-                child: Column(
-                  children: [
-                    SizedBox(
-                      height: 12,
-                    ),
-                    Align(
-                      alignment: Alignment.topLeft,
-                      child: Text(
-                        "  프로필 사진 변경",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 22,
-                            color: Colors.black),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 12,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        ...imageList
-                            .asMap()
-                            .map((i, e) => MapEntry(
-                                i,
-                                Container(
-                                  child: Expanded(
+      body: FutureBuilder(
+        future: getPictures(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return CircularProgressIndicator();
+          } else {
+            return SafeArea(
+              child: (imageList.isEmpty)
+                  // child: (imageList.isEmpty ?? true)
+                  ? Center(child: CircularProgressIndicator())
+                  : Container(
+                      padding: EdgeInsets.all(10),
+                      child: Column(
+                        children: [
+                          SizedBox(
+                            height: 12,
+                          ),
+                          Align(
+                            alignment: Alignment.topLeft,
+                            child: Text(
+                              "  프로필 사진 변경",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 22,
+                                  color: Colors.black),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 12,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              ...imageList
+                                  .asMap()
+                                  .map((i, e) => MapEntry(
+                                      i,
+                                      Container(
+                                        child: Expanded(
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              setState(() {
+                                                _index = i;
+                                              });
+                                            },
+                                            child: Container(
+                                              clipBehavior: Clip.hardEdge,
+                                              margin: EdgeInsets.all(5),
+                                              decoration: BoxDecoration(
+                                                border: Border.all(
+                                                    width: _index == i ? 3 : 1,
+                                                    color: _index == i
+                                                        ? Colors.teal
+                                                        : Colors.black),
+                                                borderRadius: BorderRadius.all(
+                                                  Radius.circular(10),
+                                                ),
+                                              ),
+                                              child: AspectRatio(
+                                                  aspectRatio: 1 / 1,
+                                                  child: e == null
+                                                      ? Icon(Icons.add)
+                                                      : showImage(e)),
+                                            ),
+                                          ),
+                                        ),
+                                      )))
+                                  .values
+                                  .toList()
+                            ],
+                          ),
+                          SizedBox(
+                            height: 24,
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: IndexedStack(
+                              index: _index,
+                              children: <Widget>[
+                                for (var i in imageList)
+                                  AspectRatio(
+                                    aspectRatio: 1 / 1,
                                     child: GestureDetector(
                                       onTap: () {
-                                        setState(() {
-                                          _index = i;
-                                        });
+                                        _pickImage(_index);
                                       },
                                       child: Container(
-                                        clipBehavior: Clip.hardEdge,
-                                        margin: EdgeInsets.all(5),
+                                        clipBehavior: Clip.antiAlias,
+                                        margin: EdgeInsets.all(10),
                                         decoration: BoxDecoration(
                                           border: Border.all(
-                                              width: _index == i ? 3 : 1,
-                                              color: _index == i
-                                                  ? Colors.teal
-                                                  : Colors.black),
+                                            width: i == null ? 1 : 0,
+                                          ),
                                           borderRadius: BorderRadius.all(
                                             Radius.circular(10),
                                           ),
                                         ),
-                                        child: AspectRatio(
-                                            aspectRatio: 1 / 1,
-                                            child: e == null
-                                                ? Icon(Icons.add)
-                                                : showImage(e)),
+                                        child: i == null
+                                            ? Icon(Icons.add)
+                                            : Stack(
+                                                children: [
+                                                  Positioned(
+                                                      right: 0,
+                                                      bottom: 0,
+                                                      left: 0,
+                                                      top: 0,
+                                                      child: showImage(i)),
+                                                  if (!provider.is_pending)
+                                                    Positioned(
+                                                      right: 2,
+                                                      top: 2,
+                                                      child: IconButton(
+                                                        icon: Icon(
+                                                          Icons.close,
+                                                          color: Colors.white,
+                                                        ),
+                                                        onPressed: () {
+                                                          setState(() {
+                                                            imageList[_index] =
+                                                                null;
+                                                          });
+                                                          _deleteSet
+                                                              .add(_index);
+                                                          _isChanged = true;
+                                                        },
+                                                      ),
+                                                    )
+                                                  else
+                                                    Center(
+                                                      child: Text(
+                                                        "회원님의 사진을 심사 중 입니다.",
+                                                        style: TextStyle(
+                                                            color: Colors.white,
+                                                            fontSize: 18),
+                                                      ),
+                                                    ),
+                                                ],
+                                              ),
                                       ),
                                     ),
-                                  ),
-                                )))
-                            .values
-                            .toList()
-                      ],
-                    ),
-                    SizedBox(
-                      height: 24,
-                    ),
-                    Expanded(
-                      flex: 2,
-                      child: IndexedStack(
-                        index: _index,
-                        children: <Widget>[
-                          for (var i in imageList)
-                            AspectRatio(
-                              aspectRatio: 1 / 1,
-                              child: GestureDetector(
-                                onTap: () {
-                                  _pickImage(_index);
-                                },
-                                child: Container(
-                                  clipBehavior: Clip.antiAlias,
-                                  margin: EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      width: i == null ? 1 : 0,
-                                    ),
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(10),
-                                    ),
-                                  ),
-                                  child: i == null
-                                      ? Icon(Icons.add)
-                                      : Stack(
-                                          children: [
-                                            Positioned(
-                                                right: 0,
-                                                bottom: 0,
-                                                left: 0,
-                                                top: 0,
-                                                child: showImage(i)),
-                                            if (!provider.is_pending)
-                                              Positioned(
-                                                right: 2,
-                                                top: 2,
-                                                child: IconButton(
-                                                  icon: Icon(
-                                                    Icons.close,
-                                                    color: Colors.white,
-                                                  ),
-                                                  onPressed: () {
-                                                    setState(() {
-                                                      imageList[_index] = null;
-                                                    });
-                                                    _deleteSet.add(_index);
-                                                    _isChanged = true;
-                                                  },
-                                                ),
-                                              )
-                                            else
-                                              Center(
-                                                child: Text(
-                                                  "회원님의 사진을 심사 중 입니다.",
-                                                  style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 18),
-                                                ),
-                                              ),
-                                          ],
-                                        ),
-                                ),
-                              ),
-                            )
+                                  )
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: EdgeInsets.all(10),
+                            child: SizedBox(
+                              width: double.maxFinite,
+                              child: _isLoading
+                                  ? Center(child: CircularProgressIndicator())
+                                  : _isChanged
+                                      ? ElevatedButton(
+                                          child: Text(
+                                            "저장",
+                                            style: TextStyle(fontSize: 18),
+                                          ),
+                                          onPressed: provider.is_pending
+                                              ? null
+                                              : () {
+                                                  setState(() {
+                                                    _isLoading = true;
+                                                  });
+                                                  DefaultRequest.uploadImages(
+                                                          imageList)
+                                                      .then((e) => provider
+                                                              .upadatePendingImage =
+                                                          e["pending"])
+                                                      .then((_) =>
+                                                          Navigator.of(context)
+                                                              .pop());
+                                                },
+                                        )
+                                      : null,
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                    Container(
-                      padding: EdgeInsets.all(10),
-                      child: SizedBox(
-                        width: double.maxFinite,
-                        child: _isLoading
-                            ? Center(child: CircularProgressIndicator())
-                            : ElevatedButton(
-                                child: Text(
-                                  "저장",
-                                  style: TextStyle(fontSize: 18),
-                                ),
-                                onPressed: provider.is_pending
-                                    ? null
-                                    : () {
-                                        setState(() {
-                                          _isLoading = true;
-                                        });
-                                        DefaultRequest.uploadImages(imageList)
-                                            .then((e) =>
-                                                provider.upadatePendingImage =
-                                                    e["pending"])
-                                            .then((_) =>
-                                                Navigator.of(context).pop());
-                                      },
-                              ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            );
+          }
+        },
       ),
     );
   }

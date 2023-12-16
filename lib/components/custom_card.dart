@@ -19,17 +19,17 @@ class _CustomCardState extends State<CustomCard> {
 
   @override
   void initState() {
-    if (widget.data['user'].isNotEmpty)
+    if (widget.data.containsKey("user")) {
       user = UserModel.fromJson(widget.data['user']);
+      setState(() {
+        if (widget.data.isNotEmpty) {
+          _angle = pi;
+        }
+      });
+    }
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback(
-      (timeStamp) {
-        setState(() {
-          if (widget.data.isNotEmpty) {
-            _angle = pi;
-          }
-        });
-      },
+      (timeStamp) {},
     );
   }
 

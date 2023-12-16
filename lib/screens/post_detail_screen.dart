@@ -1,13 +1,11 @@
 import 'package:chats/components/custom_card.dart';
 import 'package:chats/models/post_model.dart';
 import 'package:chats/providers/post_provider.dart';
-import 'package:chats/providers/user_provider.dart';
 import 'package:chats/utils/request.dart';
 import 'package:chats/utils/time.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:timer_builder/timer_builder.dart';
 
 class PostDetail extends StatefulWidget {
   late final int pk;
@@ -389,7 +387,7 @@ class _CommentState extends State<Comment> {
                     if (!(value as Map).containsKey("error"))
                       context.read<PostProvider>().addExchange = value;
                   });
-                  Navigator.of(context).pop();
+                  Navigator.pop(context);
                 },
                 child: Text("확인"))
           ],
